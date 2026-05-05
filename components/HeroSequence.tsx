@@ -27,13 +27,12 @@ export default function HeroSequence() {
     const sections = gsap.utils.toArray(".flavor-group") as HTMLElement[];
     const totalSections = sections.length;
 
-    // Set initial state for all flavors except the first one
     gsap.set(sections.slice(1), { autoAlpha: 0 });
     gsap.set(".pop", { yPercent: 100, rotation: 35 });
     gsap.set(".splash", { yPercent: 50, opacity: 0 });
     gsap.set(".text-bg", { opacity: 0, clipPath: "inset(0% 0% 100% 0%)" });
 
-    // Animate the first flavor in immediately
+    // Initial load animation
     gsap.to(sections[0].querySelector(".pop"), { yPercent: 0, rotation: 0, duration: 1, ease: "power3.out" });
     gsap.to(sections[0].querySelector(".splash"), { yPercent: 0, opacity: 1, duration: 1, ease: "power3.out" });
     gsap.to(sections[0].querySelector(".text-bg"), { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power3.out" });
@@ -52,14 +51,11 @@ export default function HeroSequence() {
         }
       });
 
-      // Background transition
       tl.to(bgRef.current, { backgroundColor: FLAVORS[index].bg, duration: 0.8, ease: "power2.inOut" }, 0);
 
-      // Fade out current
       tl.to(currentSection, { autoAlpha: 0, duration: 0.5 }, 0);
       tl.to(currentSection.querySelector(".pop"), { yPercent: -50 * direction, duration: 0.5 }, 0);
 
-      // Bring in next
       tl.set(nextSection, { autoAlpha: 1 }, 0);
       tl.fromTo(nextSection.querySelector(".pop"), 
         { yPercent: 100 * direction, rotation: 35 * direction },
@@ -77,16 +73,17 @@ export default function HeroSequence() {
       0.2);
     };
 
-    // The Observer creates the Perplexity/TikTok discrete scroll feel
     const intentObserver = Observer.create({
       type: "wheel,touch,pointer",
       wheelSpeed: -1,
-      onDown: () => {
+      // Scrolling DOWN the page -> Next Flavor
+      onUp: () => { 
         if (!isAnimating.current && currentIndex.current < totalSections - 1) {
           gotoSection(currentIndex.current + 1, 1);
         }
       },
-      onUp: () => {
+      // Scrolling UP the page -> Previous Flavor
+      onDown: () => { 
         if (!isAnimating.current && currentIndex.current > 0) {
           gotoSection(currentIndex.current - 1, -1);
         }
@@ -95,12 +92,11 @@ export default function HeroSequence() {
       preventDefault: true
     });
 
-    // Pin the section while the observer handles the internal slider
     ScrollTrigger.create({
       trigger: containerRef.current,
       pin: true,
       start: "top top",
-      end: "+=300%", // Keeps it pinned for the duration of the scroll
+      end: "+=300%", 
       onEnter: () => intentObserver.enable(),
       onLeave: () => intentObserver.disable(),
       onEnterBack: () => intentObserver.enable(),
@@ -130,7 +126,6 @@ export default function HeroSequence() {
             {flavor.title}
           </h1>
 
-          {/* PERFECTLY CENTERED POPSICLE */}
           <div className="absolute z-30 w-full h-full flex items-center justify-center pointer-events-none">
             <div className="relative w-[300px] h-[600px] md:w-[400px] md:h-[800px] flex items-center justify-center">
               <Image src={`/images/${flavor.id}-pop.png`} alt={flavor.title} fill className="pop object-contain object-center" priority={index === 0} />

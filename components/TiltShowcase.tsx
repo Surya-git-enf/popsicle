@@ -20,7 +20,7 @@ export default function TiltShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    gsap.set(".showcase-pop", { rotation: 35, transformOrigin: "bottom center" });
+    gsap.set(".showcase-pop", { rotation: 35, transformOrigin: "center center" });
 
     ScrollTrigger.create({
       trigger: sectionRef.current,
@@ -41,38 +41,36 @@ export default function TiltShowcase() {
     <section ref={sectionRef} className="relative w-full min-h-screen bg-[#F5F5DC] flex flex-col items-center justify-center py-20 z-20">
       <div className="container mx-auto px-4 w-full">
         
-        <h2 className="text-4xl md:text-6xl text-center font-bold text-[#3E2723] mb-20 tracking-tight">
+        <h2 className="text-4xl md:text-6xl text-center font-bold text-[#3E2723] mb-16 tracking-tight">
           Explore the Collection
         </h2>
 
-        {/* The Grid of Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-7xl mx-auto">
           {FLAVORS.map((flavor) => (
-            /* Rigid Card Container: fixed height, flex column */
-            <div key={flavor.id} className="flex flex-col w-full h-[400px] md:h-[500px]">
+            <div key={flavor.id} className="flex flex-col w-full h-[450px] md:h-[550px]">
               
-              {/* 80% Height - Image */}
-              <div className="h-[80%] w-full relative flex items-end justify-center pb-4">
-                <div className="relative w-[80%] h-full">
+              {/* 80% Height - PERFECTLY CENTERED IMAGE */}
+              <div className="h-[80%] w-full relative flex items-center justify-center">
+                <div className="relative w-[80%] h-[90%]">
                   <Image
                     src={`/images/${flavor.id}-pop.png`}
                     alt={flavor.name}
                     fill
-                    className="showcase-pop object-contain object-bottom drop-shadow-2xl"
+                    className="showcase-pop object-contain object-center drop-shadow-2xl"
                   />
                 </div>
               </div>
 
-              {/* 10% Height - Name */}
+              {/* 10% Height - NAME */}
               <div className="h-[10%] w-full flex items-center justify-center">
                 <h3 className="text-lg md:text-xl font-bold text-[#3E2723] uppercase tracking-widest m-0">
                   {flavor.name}
                 </h3>
               </div>
 
-              {/* 10% Height - Button */}
+              {/* 10% Height - BUTTON */}
               <div className="h-[10%] w-full flex items-center justify-center">
-                <button className="px-6 py-2 bg-[#3E2723] text-[#F5F5DC] text-xs md:text-sm font-bold rounded-full hover:bg-black transition-colors shadow-lg">
+                <button className="px-6 py-2.5 bg-[#3E2723] text-[#F5F5DC] text-xs md:text-sm font-bold rounded-full hover:bg-black transition-colors shadow-lg">
                   ORDER NOW
                 </button>
               </div>
@@ -83,4 +81,4 @@ export default function TiltShowcase() {
       </div>
     </section>
   );
-}
+              }

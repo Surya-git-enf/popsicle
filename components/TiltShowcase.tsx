@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef } from "react";
@@ -19,60 +20,67 @@ export default function TiltShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    // Initial state: Tilted
     gsap.set(".showcase-pop", { rotation: 35, transformOrigin: "bottom center" });
 
     ScrollTrigger.create({
       trigger: sectionRef.current,
-      start: "top center", // Triggers when the top of this section hits the center of the screen
+      start: "top center",
       onEnter: () => {
-        // The 1-second delay before straightening out
         gsap.to(".showcase-pop", {
           rotation: 0,
           duration: 1.2,
-          delay: 1, // 1 second delay as requested
-          ease: "elastic.out(1, 0.75)", // Nice snappy 3D spring effect
-          stagger: 0.1 // Slight cascade effect for premium feel
+          delay: 1,
+          ease: "elastic.out(1, 0.75)",
+          stagger: 0.1
         });
       },
     });
   }, { scope: sectionRef });
 
   return (
-    <section ref={sectionRef} className="relative w-full min-h-screen bg-[#F5F5DC] flex flex-col items-center justify-center py-20">
-      <div className="container mx-auto px-4">
+    <section ref={sectionRef} className="relative w-full min-h-screen bg-[#F5F5DC] flex flex-col items-center justify-center py-20 z-20">
+      <div className="container mx-auto px-4 w-full">
         
         <h2 className="text-4xl md:text-6xl text-center font-bold text-[#3E2723] mb-20 tracking-tight">
           Explore the Collection
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+        {/* The Grid of Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-7xl mx-auto">
           {FLAVORS.map((flavor) => (
-            <div key={flavor.id} className="flex flex-col items-center">
-              {/* Image Container */}
-              <div className="relative w-[150px] h-[300px] md:w-[200px] md:h-[400px] mb-6">
-                <Image
-                  src={`/images/${flavor.id}-pop.png`}
-                  alt={flavor.name}
-                  fill
-                  className="showcase-pop object-contain drop-shadow-2xl"
-                />
+            /* Rigid Card Container: fixed height, flex column */
+            <div key={flavor.id} className="flex flex-col w-full h-[400px] md:h-[500px]">
+              
+              {/* 80% Height - Image */}
+              <div className="h-[80%] w-full relative flex items-end justify-center pb-4">
+                <div className="relative w-[80%] h-full">
+                  <Image
+                    src={`/images/${flavor.id}-pop.png`}
+                    alt={flavor.name}
+                    fill
+                    className="showcase-pop object-contain object-bottom drop-shadow-2xl"
+                  />
+                </div>
               </div>
-              <h3 className="text-xl md:text-2xl font-semibold text-[#3E2723] uppercase tracking-widest">
-                {flavor.name}
-              </h3>
+
+              {/* 10% Height - Name */}
+              <div className="h-[10%] w-full flex items-center justify-center">
+                <h3 className="text-lg md:text-xl font-bold text-[#3E2723] uppercase tracking-widest m-0">
+                  {flavor.name}
+                </h3>
+              </div>
+
+              {/* 10% Height - Button */}
+              <div className="h-[10%] w-full flex items-center justify-center">
+                <button className="px-6 py-2 bg-[#3E2723] text-[#F5F5DC] text-xs md:text-sm font-bold rounded-full hover:bg-black transition-colors shadow-lg">
+                  ORDER NOW
+                </button>
+              </div>
+
             </div>
           ))}
         </div>
-
-        <div className="flex justify-center mt-10">
-          <button className="px-10 py-4 bg-[#3E2723] text-[#F5F5DC] font-bold rounded-full hover:bg-black transition-colors shadow-xl">
-            CHOOSE YOUR FLAVOR
-          </button>
-        </div>
-
       </div>
     </section>
   );
 }
-

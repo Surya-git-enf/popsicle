@@ -49,7 +49,7 @@ export default function TiltShowcase() {
           {FLAVORS.map((flavor) => (
             <div key={flavor.id} className="flex flex-col w-full h-[450px] md:h-[550px]">
               
-              {/* 80% Height - PERFECTLY CENTERED IMAGE */}
+              {/* 80% Height - Image centered */}
               <div className="h-[80%] w-full relative flex items-center justify-center">
                 <div className="relative w-[80%] h-[90%]">
                   <Image
@@ -61,14 +61,14 @@ export default function TiltShowcase() {
                 </div>
               </div>
 
-              {/* 10% Height - NAME */}
+              {/* 10% Height - Name */}
               <div className="h-[10%] w-full flex items-center justify-center">
                 <h3 className="text-lg md:text-xl font-bold text-[#3E2723] uppercase tracking-widest m-0">
                   {flavor.name}
                 </h3>
               </div>
 
-              {/* 10% Height - BUTTON */}
+              {/* 10% Height - Button */}
               <div className="h-[10%] w-full flex items-center justify-center">
                 <button className="px-6 py-2.5 bg-[#3E2723] text-[#F5F5DC] text-xs md:text-sm font-bold rounded-full hover:bg-black transition-colors shadow-lg">
                   ORDER NOW
@@ -81,4 +81,4 @@ export default function TiltShowcase() {
       </div>
     </section>
   );
-              }
+}

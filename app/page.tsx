@@ -10,7 +10,7 @@ export default function Home() {
         margin: 0,
         padding: 0,
         overflowX: "hidden",
-        backgroundColor: "#000", // Fallback color
+        backgroundColor: "#000",
       }}
     >
       <HeroSequence />

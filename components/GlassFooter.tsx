@@ -56,7 +56,7 @@ export default function GlassFooter() {
         <div className="flex justify-center mb-5 w-full">
           <div className="relative w-24 h-24 rounded-[22px] overflow-hidden shadow-[0_0_18px_rgba(255,255,255,0.9),0_0_44px_rgba(255,255,255,0.42)] border border-white/20 mx-auto">
             <Image 
-              src="/images/logo.jpg" 
+              src="/images/logo.png" 
               alt="Playful logo" 
               fill
               className="object-cover"

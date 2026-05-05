@@ -4,43 +4,49 @@
 import { useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
-gsap.registerPlugin(ScrollTrigger);
-
 export default function GlassFooter() {
-  const footerRef = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hasAppeared = useRef(false); // Keeps track so we only animate it once
 
   useGSAP(() => {
-    // Hide panel initially
+    // Hide panel initially, pushed down by 100px
     gsap.set(panelRef.current, { y: 100, opacity: 0 });
+  }, { scope: panelRef });
 
-    ScrollTrigger.create({
-      trigger: footerRef.current,
-      start: "top center", // Animates when footer reaches middle of screen
-      onEnter: () => {
-        gsap.to(panelRef.current, {
-          y: 0,
-          opacity: 1,
-          duration: 1.2,
-          ease: "power3.out",
-          delay: 0.3 // Brief pause to let the user see the video first
-        });
-      }
-    });
-  }, { scope: footerRef });
+  // This function runs multiple times a second while the video plays
+  const handleTimeUpdate = () => {
+    if (!videoRef.current || hasAppeared.current) return;
+
+    const { currentTime, duration } = videoRef.current;
+
+    // Check if we have the video duration AND we are in the last 2 seconds
+    if (duration && currentTime >= duration - 2) {
+      hasAppeared.current = true; // Lock it so it doesn't fire over and over
+
+      // Animate the panel up!
+      gsap.to(panelRef.current, {
+        y: 0,
+        opacity: 1,
+        duration: 1.2,
+        ease: "power3.out",
+      });
+    }
+  };
 
   return (
-    <section ref={footerRef} className="relative w-full h-screen bg-[#F5F5DC] overflow-hidden flex items-center justify-center z-10">
+    <section className="relative w-full h-screen bg-[#F5F5DC] overflow-hidden flex items-center justify-center z-10">
       
-      {/* Background Video */}
+      {/* Background Video Tracking Time */}
       <video
+        ref={videoRef}
         autoPlay
         loop
         muted
         playsInline
+        onTimeUpdate={handleTimeUpdate}
         className="absolute inset-0 w-full h-full object-cover z-0"
       >
         <source src="/videos/ice.mp4" type="video/mp4" />

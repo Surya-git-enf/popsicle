@@ -1,17 +1,40 @@
+
 "use client";
 
-import React from "react";
+import { useRef } from "react";
+import Image from "next/image";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function GlassFooter() {
-  const panelRef = React.useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  // Recreating the glow logic you provided in the style object
-  const buttonGlow = {
-    boxShadow: "0 0 0 1px rgba(255,255,255,0.12), 0 10px 30px rgba(255, 140, 0, 0.28)",
-  };
+  useGSAP(() => {
+    // Hide panel initially
+    gsap.set(panelRef.current, { y: 100, opacity: 0 });
+
+    ScrollTrigger.create({
+      trigger: footerRef.current,
+      start: "top center", // Animates when footer reaches middle of screen
+      onEnter: () => {
+        gsap.to(panelRef.current, {
+          y: 0,
+          opacity: 1,
+          duration: 1.2,
+          ease: "power3.out",
+          delay: 0.3 // Brief pause to let the user see the video first
+        });
+      }
+    });
+  }, { scope: footerRef });
 
   return (
-    <section className="relative w-full h-screen bg-[#F5F5DC] overflow-hidden">
+    <section ref={footerRef} className="relative w-full h-screen bg-[#F5F5DC] overflow-hidden flex items-center justify-center z-10">
+      
       {/* Background Video */}
       <video
         autoPlay
@@ -23,123 +46,38 @@ export default function GlassFooter() {
         <source src="/videos/ice.mp4" type="video/mp4" />
       </video>
 
-      {/* Floating Panel (Your exact provided code) */}
-      <div
+      {/* Glassmorphism Floating Panel */}
+      <div 
         ref={panelRef}
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 10,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "24px",
-          // Removed opacity: 0 and transform so it is immediately visible
-        }}
+        className="relative z-10 w-[min(92vw,560px)] rounded-[28px] p-8 md:p-10 bg-gradient-to-b from-[#141414B8] to-[#0A0A0AE0] border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)] text-center pointer-events-auto"
       >
-        <div
-          style={{
-            width: "min(92vw, 560px)",
-            borderRadius: "28px",
-            padding: "34px 28px",
-            background:
-              "linear-gradient(180deg, rgba(20,20,20,0.72), rgba(10,10,10,0.88))",
-            border: "1px solid rgba(255,255,255,0.10)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            boxShadow:
-              "0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)",
-            textAlign: "center",
-            pointerEvents: "auto",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginBottom: "18px",
-            }}
-          >
-            <img
-              src="/images/logo.jpg"
-              alt="Playful logo"
-              style={{
-                width: "96px",
-                height: "96px",
-                objectFit: "cover",
-                borderRadius: "22px",
-                boxShadow:
-                  "0 0 18px rgba(255,255,255,0.90), 0 0 44px rgba(255,255,255,0.42)",
-                border: "1px solid rgba(255,255,255,0.18)",
-              }}
+        
+        <div className="flex justify-center mb-5 w-full">
+          <div className="relative w-24 h-24 rounded-[22px] overflow-hidden shadow-[0_0_18px_rgba(255,255,255,0.9),0_0_44px_rgba(255,255,255,0.42)] border border-white/20 mx-auto">
+            <Image 
+              src="/images/logo.jpg" 
+              alt="Playful logo" 
+              fill
+              className="object-cover"
             />
           </div>
-
-          <h2
-            style={{
-              margin: "0 0 14px 0",
-              fontFamily: "'Georgia', 'Times New Roman', serif",
-              fontSize: "clamp(28px, 4.2vw, 54px)",
-              fontWeight: 400,
-              lineHeight: 1.08,
-              color: "#ffffff",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Playful - design 3D website
-          </h2>
-
-          <p
-            style={{
-              margin: "0 auto 24px auto",
-              maxWidth: "420px",
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-              fontSize: "clamp(13px, 1.2vw, 15px)",
-              lineHeight: 1.75,
-              color: "rgba(255,255,255,0.68)",
-              letterSpacing: "0.01em",
-              fontWeight: 300,
-            }}
-          >
-            Build cinematic, high-impact web experiences that feel premium,
-            futuristic, and unforgettable.
-          </p>
-
-          <button
-            type="button"
-            style={{
-              border: "none",
-              borderRadius: "999px",
-              padding: "14px 24px",
-              background: "linear-gradient(180deg, #ff9a1f, #ff7a00)",
-              color: "#fff",
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-              fontSize: "14px",
-              fontWeight: 700,
-              letterSpacing: "0.04em",
-              cursor: "pointer",
-              transition:
-                "transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease",
-              ...buttonGlow,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px) scale(1.02)";
-              e.currentTarget.style.boxShadow =
-                "0 0 0 1px rgba(255,255,255,0.18), 0 0 24px rgba(255, 140, 0, 0.85), 0 0 64px rgba(255, 120, 0, 0.55), 0 16px 40px rgba(255, 120, 0, 0.30)";
-              e.currentTarget.style.filter = "brightness(1.06)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0) scale(1)";
-              e.currentTarget.style.boxShadow =
-                "0 0 0 1px rgba(255,255,255,0.12), 0 10px 30px rgba(255, 140, 0, 0.28)";
-              e.currentTarget.style.filter = "brightness(1)";
-            }}
-          >
-            Book now
-          </button>
         </div>
+
+        <h2 className="mb-4 font-serif text-[clamp(28px,4.2vw,54px)] font-normal leading-[1.08] text-white tracking-[-0.02em]">
+          Playful - design 3D website
+        </h2>
+
+        <p className="mx-auto mb-6 max-w-[420px] font-sans text-[clamp(13px,1.2vw,15px)] leading-[1.75] text-white/70 tracking-[0.01em] font-light">
+          Build cinematic, high-impact web experiences that feel premium, futuristic, and unforgettable.
+        </p>
+
+        <button className="group relative border-none rounded-full px-6 py-3.5 bg-gradient-to-b from-[#ff9a1f] to-[#ff7a00] text-white font-sans text-sm font-bold tracking-[0.04em] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.18),0_0_24px_rgba(255,140,0,0.85),0_0_64px_rgba(255,120,0,0.55),0_16px_40px_rgba(255,120,0,0.30)] shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_10px_30px_rgba(255,140,0,0.28)]">
+          <span className="relative z-10 transition-all duration-300 group-hover:brightness-110">
+            Book now
+          </span>
+        </button>
+        
       </div>
     </section>
   );
 }
-

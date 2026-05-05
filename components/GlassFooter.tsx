@@ -9,24 +9,21 @@ import { useGSAP } from "@gsap/react";
 export default function GlassFooter() {
   const panelRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const hasAppeared = useRef(false); // Keeps track so we only animate it once
+  const hasAppeared = useRef(false); 
 
   useGSAP(() => {
-    // Hide panel initially, pushed down by 100px
     gsap.set(panelRef.current, { y: 100, opacity: 0 });
   }, { scope: panelRef });
 
-  // This function runs multiple times a second while the video plays
   const handleTimeUpdate = () => {
     if (!videoRef.current || hasAppeared.current) return;
 
     const { currentTime, duration } = videoRef.current;
 
-    // Check if we have the video duration AND we are in the last 2 seconds
+    // Trigger in the last 2 seconds
     if (duration && currentTime >= duration - 2) {
-      hasAppeared.current = true; // Lock it so it doesn't fire over and over
+      hasAppeared.current = true; 
 
-      // Animate the panel up!
       gsap.to(panelRef.current, {
         y: 0,
         opacity: 1,
@@ -39,7 +36,6 @@ export default function GlassFooter() {
   return (
     <section className="relative w-full h-screen bg-[#F5F5DC] overflow-hidden flex items-center justify-center z-10">
       
-      {/* Background Video Tracking Time */}
       <video
         ref={videoRef}
         autoPlay
@@ -52,7 +48,6 @@ export default function GlassFooter() {
         <source src="/videos/ice.mp4" type="video/mp4" />
       </video>
 
-      {/* Glassmorphism Floating Panel */}
       <div 
         ref={panelRef}
         className="relative z-10 w-[min(92vw,560px)] rounded-[28px] p-8 md:p-10 bg-gradient-to-b from-[#141414B8] to-[#0A0A0AE0] border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)] text-center pointer-events-auto"

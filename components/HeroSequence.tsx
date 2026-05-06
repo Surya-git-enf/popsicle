@@ -15,55 +15,46 @@ type Flavor = {
   subtitle: string;
   bg: string;
   textHex: string;
-  image: string;
-  kind: "splash" | "bar";
+  pop: string;
+  splash: string;
 };
 
 const FLAVORS: Flavor[] = [
   {
-    id: "vanilla",
-    title: "VANILLA",
-    subtitle: "Soft · Creamy · Classic",
-    bg: "#F3E2C7",
-    textHex: "#6B4B2A",
-    image: "/images/cream-splash.png",
-    kind: "splash",
-  },
-  {
     id: "chocolate",
     title: "CHOCOLATE",
     subtitle: "Rich · Smooth · Bold",
-    bg: "#5A2B1D",
-    textHex: "#FFE6D1",
-    image: "/images/choco-splash.png",
-    kind: "splash",
+    bg: "#F2C94C",
+    textHex: "#4A2311",
+    pop: "/images/chocolate-pop.png",
+    splash: "/images/chocolate-splash.png",
   },
   {
     id: "strawberry",
     title: "STRAWBERRY",
     subtitle: "Fresh · Sweet · Bright",
-    bg: "#FAD1DB",
-    textHex: "#C2185B",
-    image: "/images/strawberry-splash.png",
-    kind: "splash",
+    bg: "#00FFFF",
+    textHex: "#E91E63",
+    pop: "/images/strawberry-pop.png",
+    splash: "/images/strawberry-splash.png",
+  },
+  {
+    id: "vanilla",
+    title: "VANILLA",
+    subtitle: "Soft · Creamy · Classic",
+    bg: "#3E2723",
+    textHex: "#FFF3E0",
+    pop: "/images/vanilla-pop.png",
+    splash: "/images/vanilla-splash.png",
   },
   {
     id: "pistachio",
     title: "PISTACHIO",
     subtitle: "Nutty · Fresh · Smooth",
-    bg: "#DDE9A6",
-    textHex: "#496B12",
-    image: "/images/pistachio-splash.png",
-    kind: "splash",
-  },
-  {
-    id: "pistachio-bar",
-    title: "PISTACHIO BAR",
-    subtitle: "Crunchy · Cool · Premium",
-    bg: "#D7E89A",
-    textHex: "#2D4E10",
-    image: "/images/pistachio-bar.png",
-    kind: "bar",
+    bg: "#A5D6A7",
+    textHex: "#1B5E20",
+    pop: "/images/pistachio-pop.png",
+    splash: "/images/pistachio-splash.png",
   },
 ];
 
@@ -138,21 +129,9 @@ export default function HeroSequence() {
           0
         );
 
-        tl.to(
-          `.hs-text-${prev}`,
-          { opacity: 0, y: -40, duration: 0.35, ease: "power2.in" },
-          0
-        );
-        tl.to(
-          `.hs-pop-${prev}`,
-          { opacity: 0, y: -50, scale: 0.9, rotation: -8, duration: 0.35, ease: "power2.in" },
-          0
-        );
-        tl.to(
-          `.hs-splash-${prev}`,
-          { opacity: 0, y: -25, scale: 0.96, duration: 0.3, ease: "power2.in" },
-          0
-        );
+        tl.to(`.hs-text-${prev}`, { opacity: 0, y: -40, duration: 0.35, ease: "power2.in" }, 0);
+        tl.to(`.hs-pop-${prev}`, { opacity: 0, y: -50, scale: 0.9, rotation: -8, duration: 0.35, ease: "power2.in" }, 0);
+        tl.to(`.hs-splash-${prev}`, { opacity: 0, y: -25, scale: 0.96, duration: 0.3, ease: "power2.in" }, 0);
 
         tl.fromTo(
           `.hs-text-${index}`,
@@ -242,6 +221,40 @@ export default function HeroSequence() {
         }}
       />
 
+      <div
+        style={{
+          position: "absolute",
+          top: 18,
+          left: 18,
+          zIndex: 60,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 14,
+            background: "rgba(255,255,255,0.18)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            display: "grid",
+            placeItems: "center",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+          }}
+        >
+          <Image
+            src="/images/logo.png"
+            alt="Logo"
+            width={28}
+            height={28}
+            style={{ objectFit: "contain" }}
+          />
+        </div>
+      </div>
+
       {FLAVORS.map((flavor, i) => (
         <section key={flavor.id} style={{ position: "absolute", inset: 0, zIndex: 2 }}>
           <div
@@ -311,10 +324,10 @@ export default function HeroSequence() {
             style={{
               position: "absolute",
               left: "50%",
-              top: flavor.kind === "bar" ? "48%" : "50%",
+              top: "50%",
               transform: "translateX(-50%)",
-              width: flavor.kind === "bar" ? "min(58vw, 380px)" : "min(80vw, 580px)",
-              height: flavor.kind === "bar" ? "min(60vh, 760px)" : "min(74vh, 760px)",
+              width: "min(80vw, 580px)",
+              height: "min(74vh, 760px)",
               zIndex: 20,
             }}
           >
@@ -339,7 +352,7 @@ export default function HeroSequence() {
                 }}
               />
               <Image
-                src={flavor.image}
+                src={flavor.pop}
                 alt={flavor.title}
                 fill
                 priority={i === 0}
@@ -371,14 +384,15 @@ export default function HeroSequence() {
                 position: "relative",
                 width: "100%",
                 height: "100%",
+                opacity: 0.18,
               }}
             >
               <Image
-                src={flavor.kind === "bar" ? "/images/pistachio-bar.png" : flavor.image}
+                src={flavor.splash}
                 alt={`${flavor.title} splash`}
                 fill
                 className="object-cover object-bottom"
-                style={{ opacity: flavor.kind === "bar" ? 0.0 : 0.18 }}
+                style={{ objectPosition: "center bottom" }}
               />
             </div>
           </div>
@@ -485,4 +499,4 @@ export default function HeroSequence() {
       </div>
     </div>
   );
-}
+                  }

@@ -11,44 +11,36 @@ gsap.registerPlugin(ScrollTrigger);
 
 const FLAVORS = [
   {
-    id:        "chocolate",
-    name:      "Chocolate",
-    tagline:   "Dark & Indulgent",
-    num:       "01",
-    cardBg:    "#1A0F00",
-    accent:    "#F2C94C",
-    textLight: "#FFF8E1",
-    popImage:  "/images/chocolate-pop.png",
+    id:       "chocolate",
+    name:     "Chocolate",
+    num:      "01",
+    cardBg:   "#F2C94C",
+    textHex:  "#4A2311",
+    popImage: "/images/chocolate-pop.png",
   },
   {
-    id:        "strawberry",
-    name:      "Strawberry",
-    tagline:   "Bold & Electrifying",
-    num:       "02",
-    cardBg:    "#00101A",
-    accent:    "#00FFFF",
-    textLight: "#E0FFFF",
-    popImage:  "/images/strawberry-pop.png",
+    id:       "strawberry",
+    name:     "Strawberry",
+    num:      "02",
+    cardBg:   "#00FFFF",
+    textHex:  "#E91E63",
+    popImage: "/images/strawberry-pop.png",
   },
   {
-    id:        "vanilla",
-    name:      "Vanilla",
-    tagline:   "Silky & Classic",
-    num:       "03",
-    cardBg:    "#0D0804",
-    accent:    "#FFF3E0",
-    textLight: "#FFF3E0",
-    popImage:  "/images/vanilla-pop.png",
+    id:       "vanilla",
+    name:     "Vanilla",
+    num:      "03",
+    cardBg:   "#3E2723",
+    textHex:  "#FFF3E0",
+    popImage: "/images/vanilla-pop.png",
   },
   {
-    id:        "pistachio",
-    name:      "Pistachio",
-    tagline:   "Fresh & Nutty",
-    num:       "04",
-    cardBg:    "#041A08",
-    accent:    "#A5D6A7",
-    textLight: "#E8F5E9",
-    popImage:  "/images/pistachio-pop.png",
+    id:       "pistachio",
+    name:     "Pistachio",
+    num:      "04",
+    cardBg:   "#A5D6A7",
+    textHex:  "#1B5E20",
+    popImage: "/images/pistachio-pop.png",
   },
 ];
 
@@ -56,25 +48,25 @@ export default function TiltShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    // Start all card pops rotated 35° and invisible
-    gsap.set(".ts-card", { y: 60, opacity: 0 });
+    // Start: popsicles rotated, cards slightly down and invisible
     gsap.set(".ts-pop",  { rotation: 35, transformOrigin: "center bottom" });
+    gsap.set(".ts-card", { y: 48, opacity: 0 });
 
     ScrollTrigger.create({
       trigger: sectionRef.current,
-      start:   "top 70%",
+      start:   "top 72%",
       once:    true,
       onEnter: () => {
-        // Cards slide up
+        // Cards slide up first
         gsap.to(".ts-card", {
           y:        0,
           opacity:  1,
-          duration: 0.8,
+          duration: 0.75,
           ease:     "power3.out",
-          stagger:  0.12,
+          stagger:  0.11,
         });
 
-        // Pops snap to upright with elastic bounce (1 sec delay per spec)
+        // Then popsicles snap upright with elastic bounce (1 sec delay)
         gsap.to(".ts-pop", {
           rotation: 0,
           duration: 1.4,
@@ -93,70 +85,80 @@ export default function TiltShowcase() {
         position:        "relative",
         width:           "100%",
         minHeight:       "100vh",
-        backgroundColor: "#0A0A0A",  // Dark editorial — punchy contrast to beige hero
-        padding:         "100px 32px 120px",
+        /* Beige — seamless handoff from the hero's warm palette */
+        backgroundColor: "#F5F5DC",
+        padding:         "96px 28px 110px",
         boxSizing:       "border-box",
         overflow:        "hidden",
       }}
     >
-      {/* ── Decorative background grid lines ──────────────────────────────── */}
+      {/* Subtle dot-grid texture for editorial depth */}
       <div
         aria-hidden
         style={{
           position:       "absolute",
           inset:          0,
-          backgroundImage:`
-            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: "60px 60px",
+          backgroundImage:`radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px)`,
+          backgroundSize: "28px 28px",
           pointerEvents:  "none",
         }}
       />
 
       {/* ── Section header ─────────────────────────────────────────────────── */}
-      <div style={{ textAlign: "center", marginBottom: 72, position: "relative", zIndex: 1 }}>
+      <div
+        style={{
+          textAlign:      "center",
+          marginBottom:   68,
+          position:       "relative",
+          zIndex:         1,
+        }}
+      >
         <p
           style={{
             fontFamily:    "monospace",
             fontSize:      10,
-            letterSpacing: "0.35em",
+            letterSpacing: "0.38em",
             textTransform: "uppercase",
-            color:         "rgba(255,255,255,0.3)",
-            marginBottom:  16,
+            color:         "rgba(0,0,0,0.32)",
+            marginBottom:  14,
           }}
         >
           — The Collection —
         </p>
         <h2
           style={{
-            fontSize:      "clamp(44px, 7vw, 96px)",
+            fontSize:      "clamp(42px, 6.5vw, 90px)",
             fontWeight:    900,
             fontFamily:    "Georgia, 'Times New Roman', serif",
             letterSpacing: "-0.04em",
             lineHeight:    0.95,
-            color:         "#fff",
+            color:         "#1a1009",
             margin:        0,
           }}
         >
           Pick Your
           <br />
-          <em style={{ fontStyle: "italic", color: "rgba(255,255,255,0.45)" }}>
+          <span
+            style={{
+              fontStyle: "italic",
+              color:     "rgba(0,0,0,0.28)",
+            }}
+          >
             Obsession
-          </em>
+          </span>
         </h2>
       </div>
 
-      {/* ── 4-column card grid ─────────────────────────────────────────────── */}
+      {/* ── 4-column flavor grid ───────────────────────────────────────────── */}
       <div
         style={{
-          display:               "grid",
-          gridTemplateColumns:   "repeat(4, 1fr)",
-          gap:                   20,
-          maxWidth:              1320,
-          margin:                "0 auto",
-          position:              "relative",
-          zIndex:                1,
+          display:             "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap:                 18,
+          maxWidth:            1300,
+          margin:              "0 auto",
+          position:            "relative",
+          zIndex:              1,
         }}
       >
         {FLAVORS.map((flavor) => (
@@ -164,59 +166,44 @@ export default function TiltShowcase() {
             key={flavor.id}
             className="ts-card"
             style={{
-              display:       "flex",
-              flexDirection: "column",
-              height:        520,
-              borderRadius:  20,
-              overflow:      "hidden",
+              display:         "flex",
+              flexDirection:   "column",
+              height:          520,
+              borderRadius:    22,
+              overflow:        "hidden",
               backgroundColor: flavor.cardBg,
-              border:        `1px solid rgba(255,255,255,0.07)`,
-              boxShadow:     "0 4px 40px rgba(0,0,0,0.5)",
-              cursor:        "pointer",
-              transition:    "transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s ease",
-              position:      "relative",
+              /* Crisp paper-cut border matching the card color */
+              border:          `2px solid ${flavor.cardBg}`,
+              boxShadow:       "0 2px 20px rgba(0,0,0,0.10)",
+              cursor:          "pointer",
+              transition:      "transform 0.38s cubic-bezier(0.23,1,0.32,1), box-shadow 0.38s ease",
+              position:        "relative",
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.transform = "translateY(-10px) scale(1.02)";
-              el.style.boxShadow = `0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px ${flavor.accent}55`;
+              el.style.transform  = "translateY(-12px) scale(1.025)";
+              el.style.boxShadow  = `0 28px 72px rgba(0,0,0,0.22), 0 0 0 2px ${flavor.textHex}44`;
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.transform = "translateY(0) scale(1)";
-              el.style.boxShadow = "0 4px 40px rgba(0,0,0,0.5)";
+              el.style.transform  = "translateY(0) scale(1)";
+              el.style.boxShadow  = "0 2px 20px rgba(0,0,0,0.10)";
             }}
           >
-            {/* Accent glow top */}
-            <div
-              aria-hidden
-              style={{
-                position:     "absolute",
-                top:          -60,
-                left:         "50%",
-                transform:    "translateX(-50%)",
-                width:        180,
-                height:       180,
-                borderRadius: "50%",
-                background:   flavor.accent,
-                opacity:      0.07,
-                filter:       "blur(40px)",
-                pointerEvents:"none",
-              }}
-            />
-
-            {/* Flavor number — top-left badge */}
+            {/* Number badge — top right */}
             <div
               style={{
                 position:      "absolute",
-                top:           16,
-                left:          18,
+                top:           14,
+                right:         16,
                 fontFamily:    "monospace",
-                fontSize:      11,
-                letterSpacing: "0.2em",
-                color:         flavor.accent,
-                opacity:       0.7,
+                fontSize:      10,
+                fontWeight:    700,
+                letterSpacing: "0.22em",
+                color:         flavor.textHex,
+                opacity:       0.45,
                 zIndex:        5,
+                userSelect:    "none",
               }}
             >
               {flavor.num}
@@ -231,16 +218,16 @@ export default function TiltShowcase() {
                 justifyContent: "center",
                 position:       "relative",
                 overflow:       "hidden",
-                paddingTop:     20,
+                paddingTop:     16,
               }}
             >
-              {/* Subtle radial gradient backdrop */}
+              {/* Inner light vignette — gives the card a glowing product feel */}
               <div
                 aria-hidden
                 style={{
                   position:     "absolute",
                   inset:        0,
-                  background:   `radial-gradient(ellipse at 50% 80%, ${flavor.accent}18 0%, transparent 70%)`,
+                  background:   `radial-gradient(ellipse at 50% 100%, rgba(255,255,255,0.25) 0%, transparent 70%)`,
                   pointerEvents:"none",
                 }}
               />
@@ -249,8 +236,8 @@ export default function TiltShowcase() {
                 className="ts-pop"
                 style={{
                   position: "relative",
-                  width:    "62%",
-                  height:   "86%",
+                  width:    "64%",
+                  height:   "87%",
                 }}
               >
                 <Image
@@ -259,68 +246,54 @@ export default function TiltShowcase() {
                   fill
                   className="object-contain object-center"
                   style={{
-                    filter: `drop-shadow(0 20px 40px ${flavor.accent}40)`,
+                    filter: `drop-shadow(0 18px 36px rgba(0,0,0,0.22))`,
                   }}
                 />
               </div>
             </div>
 
-            {/* Thin separator */}
+            {/* Thin hairline separator */}
             <div
               style={{
                 height:          1,
-                backgroundColor: `rgba(255,255,255,0.06)`,
                 margin:          "0 18px",
+                backgroundColor: `${flavor.textHex}22`,
               }}
             />
 
-            {/* ── MIDDLE 10%: name + tagline ───────────────────────────────── */}
+            {/* ── MIDDLE 10%: flavor name only (no tagline) ────────────────── */}
             <div
               style={{
                 flex:           "0 0 10%",
                 display:        "flex",
-                flexDirection:  "column",
                 alignItems:     "center",
                 justifyContent: "center",
-                gap:            2,
-                padding:        "0 14px",
               }}
             >
               <span
                 style={{
-                  fontFamily:    "Georgia, serif",
+                  fontFamily:    "Georgia, 'Times New Roman', serif",
                   fontSize:      15,
                   fontWeight:    700,
-                  letterSpacing: "0.12em",
+                  letterSpacing: "0.14em",
                   textTransform: "uppercase",
-                  color:         flavor.accent,
+                  color:         flavor.textHex,
                 }}
               >
                 {flavor.name}
               </span>
-              <span
-                style={{
-                  fontFamily:    "monospace",
-                  fontSize:      9,
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  color:         "rgba(255,255,255,0.28)",
-                }}
-              >
-                {flavor.tagline}
-              </span>
             </div>
 
-            {/* Thin separator */}
+            {/* Thin hairline separator */}
             <div
               style={{
                 height:          1,
-                backgroundColor: `rgba(255,255,255,0.06)`,
                 margin:          "0 18px",
+                backgroundColor: `${flavor.textHex}22`,
               }}
             />
 
-            {/* ── BOTTOM 10%: CTA button ───────────────────────────────────── */}
+            {/* ── BOTTOM 10%: Order button ─────────────────────────────────── */}
             <div
               style={{
                 flex:           "0 0 10%",
@@ -331,29 +304,29 @@ export default function TiltShowcase() {
             >
               <button
                 style={{
-                  padding:       "8px 22px",
+                  padding:       "8px 24px",
                   borderRadius:  999,
-                  border:        `1px solid ${flavor.accent}50`,
-                  background:    `${flavor.accent}14`,
-                  color:         flavor.accent,
+                  border:        `1.5px solid ${flavor.textHex}`,
+                  background:    "transparent",
+                  color:         flavor.textHex,
                   fontFamily:    "monospace",
                   fontSize:      9,
                   fontWeight:    700,
-                  letterSpacing: "0.25em",
+                  letterSpacing: "0.26em",
                   textTransform: "uppercase",
                   cursor:        "pointer",
-                  transition:    "all 0.25s ease",
+                  transition:    "all 0.22s ease",
                 }}
                 onMouseEnter={(e) => {
                   const b = e.currentTarget as HTMLButtonElement;
-                  b.style.background = flavor.accent;
+                  b.style.background = flavor.textHex;
                   b.style.color      = flavor.cardBg;
-                  b.style.transform  = "scale(1.04)";
+                  b.style.transform  = "scale(1.05)";
                 }}
                 onMouseLeave={(e) => {
                   const b = e.currentTarget as HTMLButtonElement;
-                  b.style.background = `${flavor.accent}14`;
-                  b.style.color      = flavor.accent;
+                  b.style.background = "transparent";
+                  b.style.color      = flavor.textHex;
                   b.style.transform  = "scale(1)";
                 }}
               >
@@ -364,38 +337,37 @@ export default function TiltShowcase() {
         ))}
       </div>
 
-      {/* ── Bottom marquee strip ───────────────────────────────────────────── */}
+      {/* ── Scrolling marquee footer strip ────────────────────────────────── */}
       <div
         style={{
-          marginTop:    80,
+          marginTop:    72,
           overflow:     "hidden",
           position:     "relative",
           zIndex:       1,
-          borderTop:    "1px solid rgba(255,255,255,0.06)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          padding:      "14px 0",
+          borderTop:    "1px solid rgba(0,0,0,0.08)",
+          padding:      "16px 0 0",
         }}
       >
         <div
           style={{
-            display:   "flex",
-            gap:       40,
-            animation: "marquee 18s linear infinite",
-            whiteSpace:"nowrap",
+            display:    "flex",
+            gap:        48,
+            animation:  "ts-marquee 20s linear infinite",
+            whiteSpace: "nowrap",
           }}
         >
-          {Array.from({ length: 6 }).flatMap(() =>
+          {Array.from({ length: 8 }).flatMap((_, rep) =>
             FLAVORS.map((f) => (
               <span
-                key={`${f.id}-${Math.random()}`}
+                key={`${f.id}-${rep}`}
                 style={{
                   fontFamily:    "Georgia, serif",
                   fontSize:      11,
                   fontWeight:    700,
                   letterSpacing: "0.3em",
                   textTransform: "uppercase",
-                  color:         f.accent,
-                  opacity:       0.5,
+                  color:         f.textHex,
+                  opacity:       0.45,
                 }}
               >
                 {f.name} ·
@@ -406,18 +378,14 @@ export default function TiltShowcase() {
       </div>
 
       <style>{`
-        @keyframes marquee {
+        @keyframes ts-marquee {
           0%   { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
-        @media (max-width: 900px) {
-          .ts-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 540px) {
-          .ts-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 860px) {
+          /* override inline grid on smaller screens */
         }
       `}</style>
     </section>
   );
-              }
-                
+}

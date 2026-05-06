@@ -7,74 +7,219 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
 export default function GlassFooter() {
-  const panelRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hasAppeared = useRef(false);
+  const sectionRef  = useRef<HTMLDivElement>(null);
+  const videoRef    = useRef<HTMLVideoElement>(null);
+  const panelRef    = useRef<HTMLDivElement>(null);
+  const overlayRef  = useRef<HTMLDivElement>(null);
+  const hasShown    = useRef(false);
 
   useGSAP(() => {
-    // Hide panel initially with cinematic scale
-    gsap.set(panelRef.current, { y: 100, scale: 0.9, opacity: 0 });
-  }, { scope: panelRef });
+    // Panel and overlay start fully hidden
+    gsap.set(panelRef.current,  { y: 100, scale: 0.92, opacity: 0 });
+    gsap.set(overlayRef.current, { opacity: 0 });
+  }, { scope: sectionRef });
 
-  const handleVideoEnd = () => {
-    if (!hasAppeared.current) {
-      hasAppeared.current = true;
-      gsap.to(panelRef.current, {
-        y: 0,
-        scale: 1,
-        opacity: 1,
-        duration: 1.5,
-        ease: "expo.out",
-      });
-    }
+  /**
+   * onTimeUpdate fires ~4× per second.
+   * We compare currentTime to duration and trigger the reveal
+   * in the last 2 seconds — giving the panel time to animate in
+   * before the video freezes on its last frame.
+   */
+  const handleTimeUpdate = () => {
+    if (hasShown.current) return;
+    const vid = videoRef.current;
+    if (!vid) return;
 
-    // Manually restart the video for a continuous background loop
-    if (videoRef.current) {
-      videoRef.current.play();
-    }
+    const { currentTime, duration } = vid;
+    if (!duration || currentTime < duration - 2) return;
+
+    // Mark done immediately so rapid timeupdate calls don't re-fire
+    hasShown.current = true;
+
+    // Darken the overlay so panel reads well on any video frame
+    gsap.to(overlayRef.current, {
+      opacity:  1,
+      duration: 0.8,
+      ease:     "power2.out",
+    });
+
+    // Float the panel up
+    gsap.to(panelRef.current, {
+      y:        0,
+      scale:    1,
+      opacity:  1,
+      duration: 1.5,
+      ease:     "expo.out",
+      delay:    0.1,
+    });
   };
 
   return (
-    <section className="relative w-full h-screen bg-[#F5F5DC] overflow-hidden flex items-center justify-center z-10">
-      
-      {/* Video triggers handleVideoEnd instead of looping automatically */}
+    <section
+      ref={sectionRef}
+      style={{
+        position:   "relative",
+        width:      "100%",
+        height:     "100vh",
+        overflow:   "hidden",
+        display:    "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {/* Full-screen background video — no loop, plays once */}
       <video
         ref={videoRef}
         autoPlay
         muted
         playsInline
-        onEnded={handleVideoEnd}
-        className="absolute inset-0 w-full h-full object-cover z-0"
+        onTimeUpdate={handleTimeUpdate}
+        style={{
+          position:   "absolute",
+          inset:      0,
+          width:      "100%",
+          height:     "100%",
+          objectFit:  "cover",
+          zIndex:     0,
+        }}
       >
         <source src="/videos/ice.mp4" type="video/mp4" />
       </video>
 
-      <div 
+      {/* Dark overlay — fades in before panel appears */}
+      <div
+        ref={overlayRef}
+        style={{
+          position:        "absolute",
+          inset:           0,
+          zIndex:          1,
+          backgroundColor: "rgba(0,0,0,0.52)",
+          backdropFilter:  "blur(2px)",
+        }}
+      />
+
+      {/* Glassmorphism panel — starts hidden, floats up on video near-end */}
+      <div
         ref={panelRef}
-        className="relative z-10 w-[min(92vw,560px)] rounded-[28px] p-8 md:p-10 bg-gradient-to-b from-[#141414B8] to-[#0A0A0AE0] border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)] text-center pointer-events-auto"
+        style={{
+          position:   "relative",
+          zIndex:     10,
+          width:      "min(92vw, 560px)",
+          borderRadius: 28,
+          padding:    "40px",
+          background: "linear-gradient(to bottom, #141414B8, #0A0A0AE0)",
+          border:     "1px solid rgba(255,255,255,0.10)",
+          backdropFilter:       "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow:  "0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)",
+          textAlign:  "center",
+        }}
       >
-        
-        {/* Strictly Centered Logo */}
-        <div className="flex justify-center mb-5 w-full">
-          <div className="relative w-24 h-24 rounded-[22px] overflow-hidden shadow-[0_0_18px_rgba(255,255,255,0.9),0_0_44px_rgba(255,255,255,0.42)] border border-white/20 mx-auto">
-            <Image src="/images/logo.jpg" alt="Playful logo" fill className="object-cover" />
+        {/* Logo */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+          <div
+            style={{
+              position:     "relative",
+              width:        96,
+              height:       96,
+              borderRadius: 22,
+              overflow:     "hidden",
+              boxShadow:    "0 0 18px rgba(255,255,255,0.9), 0 0 44px rgba(255,255,255,0.42)",
+              border:       "1px solid rgba(255,255,255,0.20)",
+            }}
+          >
+            <Image
+              src="/images/logo.jpg"
+              alt="Playful logo"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
 
-        <h2 className="mb-4 font-serif text-[clamp(28px,4.2vw,54px)] font-normal leading-[1.08] text-white tracking-[-0.02em]">
+        {/* Heading */}
+        <h2
+          style={{
+            marginBottom:  16,
+            fontFamily:    "Georgia, 'Times New Roman', serif",
+            fontSize:      "clamp(28px, 4.2vw, 54px)",
+            fontWeight:    400,
+            lineHeight:    1.08,
+            color:         "#fff",
+            letterSpacing: "-0.02em",
+          }}
+        >
           Playful - design 3D website
         </h2>
 
-        <p className="mx-auto mb-6 max-w-[420px] font-sans text-[clamp(13px,1.2vw,15px)] leading-[1.75] text-white/70 tracking-[0.01em] font-light">
-          Build cinematic, high-impact web experiences that feel premium, futuristic, and unforgettable.
+        {/* Body */}
+        <p
+          style={{
+            maxWidth:      420,
+            margin:        "0 auto 24px",
+            fontFamily:    "system-ui, sans-serif",
+            fontSize:      "clamp(13px, 1.2vw, 15px)",
+            lineHeight:    1.75,
+            color:         "rgba(255,255,255,0.70)",
+            letterSpacing: "0.01em",
+            fontWeight:    300,
+          }}
+        >
+          Build cinematic, high-impact web experiences that feel premium,
+          futuristic, and unforgettable.
         </p>
 
-        <button className="group relative border-none rounded-full px-6 py-3.5 bg-gradient-to-b from-[#ff9a1f] to-[#ff7a00] text-white font-sans text-sm font-bold tracking-[0.04em] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.18),0_0_24px_rgba(255,140,0,0.85),0_0_64px_rgba(255,120,0,0.55),0_16px_40px_rgba(255,120,0,0.30)] shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_10px_30px_rgba(255,140,0,0.28)]">
-          <span className="relative z-10 transition-all duration-300 group-hover:brightness-110">
-            Book now
-          </span>
+        {/* CTA */}
+        <button
+          style={{
+            position:      "relative",
+            border:        "none",
+            borderRadius:  999,
+            padding:       "14px 28px",
+            background:    "linear-gradient(to bottom, #ff9a1f, #ff7a00)",
+            color:         "#fff",
+            fontFamily:    "system-ui, sans-serif",
+            fontSize:      14,
+            fontWeight:    700,
+            letterSpacing: "0.04em",
+            cursor:        "pointer",
+            boxShadow:     "0 0 0 1px rgba(255,255,255,0.12), 0 10px 30px rgba(255,140,0,0.28)",
+            transition:    "all 0.3s ease-out",
+          }}
+          onMouseEnter={(e) => {
+            const b = e.currentTarget as HTMLButtonElement;
+            b.style.transform  = "translateY(-2px)";
+            b.style.boxShadow  =
+              "0 0 0 1px rgba(255,255,255,0.18), 0 0 24px rgba(255,140,0,0.85), 0 0 64px rgba(255,120,0,0.55), 0 16px 40px rgba(255,120,0,0.30)";
+          }}
+          onMouseLeave={(e) => {
+            const b = e.currentTarget as HTMLButtonElement;
+            b.style.transform  = "translateY(0)";
+            b.style.boxShadow  =
+              "0 0 0 1px rgba(255,255,255,0.12), 0 10px 30px rgba(255,140,0,0.28)";
+          }}
+        >
+          Book now
         </button>
-        
+      </div>
+
+      {/* Subtle video progress hint at bottom */}
+      <div
+        style={{
+          position:      "absolute",
+          bottom:        24,
+          left:          "50%",
+          transform:     "translateX(-50%)",
+          fontFamily:    "monospace",
+          fontSize:      9,
+          letterSpacing: "0.3em",
+          textTransform: "uppercase",
+          color:         "rgba(255,255,255,0.3)",
+          zIndex:        20,
+          pointerEvents: "none",
+        }}
+      >
+        Loading experience…
       </div>
     </section>
   );

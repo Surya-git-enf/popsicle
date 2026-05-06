@@ -9,309 +9,479 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-const FLAVORS = [
-  { id: "chocolate",  label: "Chocolate",  bg: "#F2C94C", ink: "#4A2311" },
-  { id: "strawberry", label: "Strawberry", bg: "#00FFFF", ink: "#E91E63" },
-  { id: "vanilla",    label: "VANILLA",    bg: "#3E2723", ink: "#FFF3E0" },
-  { id: "pistachio",  label: "Pistachio",  bg: "#A5D6A7", ink: "#1B5E20" },
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-/** Kill all tweens on a selector before starting new ones */
-const killAndSet = (sel: string, props: gsap.TweenVars) => {
-  gsap.killTweensOf(sel);
-  gsap.set(sel, props);
+type Flavor = {
+  id: string;
+  title: string;
+  subtitle: string;
+  bg: string;
+  textHex: string;
+  image: string;
+  kind: "splash" | "bar";
 };
 
+const FLAVORS: Flavor[] = [
+  {
+    id: "vanilla",
+    title: "VANILLA",
+    subtitle: "Soft · Creamy · Classic",
+    bg: "#F3E2C7",
+    textHex: "#6B4B2A",
+    image: "/images/cream-splash.png",
+    kind: "splash",
+  },
+  {
+    id: "chocolate",
+    title: "CHOCOLATE",
+    subtitle: "Rich · Smooth · Bold",
+    bg: "#5A2B1D",
+    textHex: "#FFE6D1",
+    image: "/images/choco-splash.png",
+    kind: "splash",
+  },
+  {
+    id: "strawberry",
+    title: "STRAWBERRY",
+    subtitle: "Fresh · Sweet · Bright",
+    bg: "#FAD1DB",
+    textHex: "#C2185B",
+    image: "/images/strawberry-splash.png",
+    kind: "splash",
+  },
+  {
+    id: "pistachio",
+    title: "PISTACHIO",
+    subtitle: "Nutty · Fresh · Smooth",
+    bg: "#DDE9A6",
+    textHex: "#496B12",
+    image: "/images/pistachio-splash.png",
+    kind: "splash",
+  },
+  {
+    id: "pistachio-bar",
+    title: "PISTACHIO BAR",
+    subtitle: "Crunchy · Cool · Premium",
+    bg: "#D7E89A",
+    textHex: "#2D4E10",
+    image: "/images/pistachio-bar.png",
+    kind: "bar",
+  },
+];
+
 export default function HeroSequence() {
-  const wrapRef    = useRef<HTMLDivElement>(null); // 400vh scroll track
-  const bgRef      = useRef<HTMLDivElement>(null); // background color div
-  const trigRefs   = useRef<(HTMLDivElement | null)[]>([]);
-  const current    = useRef(0);
-  const breathTLs  = useRef<gsap.core.Tween[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef(0);
 
-  // ─── startBreathing: gentle rise-and-fall loop once a flavor is settled ────
-  const startBreathing = (i: number) => {
-    breathTLs.current.forEach((t) => t.kill());
-    breathTLs.current = [
-      // Popsicle: slow vertical breath + faint rock
-      gsap.to(`#pop-${i}`, {
-        y:        -18,
-        rotation: 1.8,
-        duration: 3.2,
-        ease:     "sine.inOut",
-        yoyo:     true,
-        repeat:   -1,
-      }),
-      // Splash: subtle swell beneath
-      gsap.to(`#splash-${i}`, {
-        scaleX:   1.03,
-        y:        8,
-        duration: 3.8,
-        ease:     "sine.inOut",
-        yoyo:     true,
-        repeat:   -1,
-      }),
-    ];
-  };
+  useGSAP(
+    () => {
+      const total = FLAVORS.length - 1;
 
-  // ─── animateIn: crossfade + rise-from-splash entrance ───────────────────────
-  const animateIn = (next: number) => {
-    if (current.current === next) return;
-    const prev = current.current;
-    current.current = next;
+      gsap.set(bgRef.current, { backgroundColor: FLAVORS[0].bg });
 
-    const tl = gsap.timeline({ defaults: { overwrite: "auto" } });
-
-    // 1. Background crossfade
-    tl.to(bgRef.current, {
-      backgroundColor: FLAVORS[next].bg,
-      duration: 0.75,
-      ease: "power2.inOut",
-    }, 0);
-
-    // 2. OUT — previous elements vanish upward
-    tl.to(`#text-${prev}`,   { y: -60, opacity: 0, duration: 0.35, ease: "power3.in" }, 0);
-    tl.to(`#pop-${prev}`,    { y: -80, opacity: 0, duration: 0.35, ease: "power3.in" }, 0);
-    tl.to(`#splash-${prev}`, { y: -30, opacity: 0, duration: 0.28, ease: "power2.in" }, 0);
-
-    // 3. Reset next elements to "submerged" start position
-    //    — pop starts inside the splash zone (bottom of screen), tilted
-    killAndSet(`#text-${next}`,   { opacity: 0, y: 70 });
-    killAndSet(`#pop-${next}`,    { opacity: 0, y: "55vh", rotation: 18, scale: 0.88 });
-    killAndSet(`#splash-${next}`, { opacity: 0, y: 60, scale: 0.92 });
-
-    // 4. IN — splash rises first, then pop emerges through it
-    tl.to(`#splash-${next}`, {
-      opacity: 1, y: 0, scale: 1,
-      duration: 0.65, ease: "power3.out",
-    }, 0.28);
-
-    // The popsicle RISES from behind / through the splash — the hero moment
-    tl.to(`#pop-${next}`, {
-      opacity: 1, y: 0, rotation: 0, scale: 1,
-      duration: 1.05, ease: "expo.out",
-    }, 0.42);                                // starts while splash is still animating
-
-    // Text fades in last, from below
-    tl.to(`#text-${next}`, {
-      opacity: 1, y: 0,
-      duration: 0.8, ease: "power4.out",
-    }, 0.55);
-
-    // 5. Once the entrance settles, hand off to the breathing loop
-    tl.call(() => startBreathing(next), [], 1.4);
-  };
-
-  useGSAP(() => {
-    // ── Initial state: first flavor visible, rest hidden ──────────────────────
-    gsap.set(bgRef.current, { backgroundColor: FLAVORS[0].bg });
-    FLAVORS.forEach((_, i) => {
-      const hidden = i !== 0;
-      gsap.set(`#text-${i}`,   { opacity: hidden ? 0 : 1, y: hidden ? 70  : 0 });
-      gsap.set(`#pop-${i}`,    { opacity: hidden ? 0 : 1, y: hidden ? "55vh" : 0, rotation: hidden ? 18 : 0, scale: hidden ? 0.88 : 1 });
-      gsap.set(`#splash-${i}`, { opacity: hidden ? 0 : 1, y: hidden ? 60  : 0, scale: hidden ? 0.92 : 1 });
-    });
-    startBreathing(0); // kick off breathing on first flavor immediately
-
-    // ── Invisible sentinel ScrollTriggers ──────────────────────────────────────
-    trigRefs.current.forEach((el, i) => {
-      if (!el) return;
-      ScrollTrigger.create({
-        trigger:     el,
-        start:       "top 55%",
-        end:         "bottom 45%",
-        onEnter:     () => animateIn(i),
-        onEnterBack: () => animateIn(i),
+      FLAVORS.forEach((_, i) => {
+        if (i === 0) {
+          gsap.set(`.hs-text-${i}`, { opacity: 1, y: 0 });
+          gsap.set(`.hs-pop-${i}`, { opacity: 1, y: 0, scale: 1, rotation: 0 });
+          gsap.set(`.hs-splash-${i}`, { opacity: 1, y: 0, scale: 1 });
+        } else {
+          gsap.set(`.hs-text-${i}`, { opacity: 0, y: 80 });
+          gsap.set(`.hs-pop-${i}`, { opacity: 0, y: 110, scale: 0.9, rotation: 10 });
+          gsap.set(`.hs-splash-${i}`, { opacity: 0, y: 60, scale: 0.98 });
+        }
       });
-    });
 
-    // ── Snap: 1 scroll = 1 flavor, CSS sticky handles the visual pin ──────────
-    ScrollTrigger.create({
-      trigger: wrapRef.current,
-      start:   "top top",
-      end:     "bottom bottom",
-      snap: {
-        snapTo:   1 / 3,
-        duration: { min: 0.4, max: 0.85 },
-        delay:    0.04,
-        ease:     "power2.inOut",
-      },
-    });
-  }, { scope: wrapRef });
+      gsap.to(".hs-pop-float", {
+        y: -18,
+        rotation: 2,
+        duration: 2.8,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        stagger: 0.25,
+      });
 
-  // ─── Render ────────────────────────────────────────────────────────────────
+      gsap.to(".hs-splash-float", {
+        y: 10,
+        scale: 1.03,
+        duration: 3.5,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        stagger: 0.25,
+      });
+
+      gsap.to(".hs-particle", {
+        y: -14,
+        opacity: 0.9,
+        duration: 2.6,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        stagger: 0.12,
+      });
+
+      function animateIn(index: number) {
+        if (activeRef.current === index) return;
+
+        const prev = activeRef.current;
+        activeRef.current = index;
+
+        const tl = gsap.timeline({ defaults: { overwrite: "auto" } });
+
+        tl.to(
+          bgRef.current,
+          {
+            backgroundColor: FLAVORS[index].bg,
+            duration: 0.8,
+            ease: "power2.inOut",
+          },
+          0
+        );
+
+        tl.to(
+          `.hs-text-${prev}`,
+          { opacity: 0, y: -40, duration: 0.35, ease: "power2.in" },
+          0
+        );
+        tl.to(
+          `.hs-pop-${prev}`,
+          { opacity: 0, y: -50, scale: 0.9, rotation: -8, duration: 0.35, ease: "power2.in" },
+          0
+        );
+        tl.to(
+          `.hs-splash-${prev}`,
+          { opacity: 0, y: -25, scale: 0.96, duration: 0.3, ease: "power2.in" },
+          0
+        );
+
+        tl.fromTo(
+          `.hs-text-${index}`,
+          { opacity: 0, y: 70 },
+          { opacity: 1, y: 0, duration: 0.85, ease: "power4.out" },
+          0.18
+        );
+
+        tl.fromTo(
+          `.hs-pop-${index}`,
+          { opacity: 0, y: 110, scale: 0.88, rotation: 10 },
+          { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 1.05, ease: "expo.out" },
+          0.12
+        );
+
+        tl.fromTo(
+          `.hs-splash-${index}`,
+          { opacity: 0, y: 60, scale: 0.98 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "power3.out" },
+          0.24
+        );
+
+        gsap.to(".nav-dot", { backgroundColor: "transparent", duration: 0.25 });
+        gsap.to(`.nav-dot-${index}`, {
+          backgroundColor: "rgba(0,0,0,0.58)",
+          duration: 0.25,
+        });
+      }
+
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top top",
+        end: `+=${total * 100}%`,
+        pin: true,
+        scrub: 0.75,
+        snap: {
+          snapTo: 1 / total,
+          duration: { min: 0.35, max: 0.8 },
+          delay: 0.02,
+          ease: "power2.inOut",
+        },
+        onUpdate: (self) => {
+          const index = Math.round(self.progress * total);
+          animateIn(index);
+        },
+      });
+    },
+    { scope: containerRef }
+  );
+
   return (
-    <div ref={wrapRef} style={{ position: "relative", height: "400vh" }}>
+    <div
+      ref={containerRef}
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100vh",
+        overflow: "hidden",
+      }}
+    >
+      <div ref={bgRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />
 
-      {/* 4 invisible scroll sentinels — one per flavor slot */}
-      {FLAVORS.map((_, i) => (
-        <div
-          key={i}
-          ref={(el) => { trigRefs.current[i] = el; }}
-          style={{ position: "absolute", top: `${i * 100}vh`, left: 0, width: "100%", height: "100vh", pointerEvents: "none" }}
-        />
-      ))}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: "none",
+          background:
+            "radial-gradient(circle at center, rgba(255,255,255,0.20), transparent 58%), linear-gradient(to top, rgba(255,255,255,0.16), transparent 32%)",
+          mixBlendMode: "soft-light",
+        }}
+      />
 
-      {/* CSS sticky viewport — no ScrollTrigger pin, no layout gaps */}
-      <div style={{ position: "sticky", top: 0, width: "100%", height: "100vh", overflow: "hidden" }}>
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: "none",
+          opacity: 0.22,
+          backgroundImage:
+            'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\' opacity=\'0.07\'/%3E%3C/svg%3E")',
+          backgroundSize: "300px 300px",
+        }}
+      />
 
-        {/* Background */}
-        <div ref={bgRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />
-
-        {/* Grain texture — premium tactile feel */}
-        <svg aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1, opacity: 0.35, pointerEvents: "none" }}>
-          <filter id="grain">
-            <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="4" stitchTiles="stitch" />
-            <feColorMatrix type="saturate" values="0" />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#grain)" opacity="0.08" />
-        </svg>
-
-        {/* All 4 flavor layers */}
-        {FLAVORS.map((f, i) => (
-          <div key={f.id} style={{ position: "absolute", inset: 0, zIndex: 2 }}>
-
-            {/* ── Large gradient text — top 7% ───────────────────────────────── */}
-            <div
-              id={`text-${i}`}
+      {FLAVORS.map((flavor, i) => (
+        <section key={flavor.id} style={{ position: "absolute", inset: 0, zIndex: 2 }}>
+          <div
+            className={`hs-text-${i}`}
+            style={{
+              position: "absolute",
+              top: "7%",
+              left: 0,
+              right: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              zIndex: 10,
+              pointerEvents: "none",
+            }}
+          >
+            <p
               style={{
-                position: "absolute", top: "7%", left: 0, right: 0,
-                display: "flex", flexDirection: "column", alignItems: "center",
-                pointerEvents: "none", zIndex: 10,
+                margin: 0,
+                fontFamily: "monospace",
+                fontSize: 10,
+                letterSpacing: "0.34em",
+                textTransform: "uppercase",
+                color: flavor.textHex,
+                opacity: 0.72,
               }}
             >
-              <h1 style={{
-                margin: 0,
-                fontSize: "clamp(58px, 12vw, 148px)",
+              Ice Cream Store · {String(i + 1).padStart(2, "0")}
+            </p>
+
+            <h1
+              style={{
+                fontSize: "clamp(44px, 10vw, 128px)",
                 fontWeight: 900,
+                letterSpacing: "-0.05em",
+                lineHeight: 0.95,
                 fontFamily: "Georgia, 'Times New Roman', serif",
-                letterSpacing: "-0.045em",
-                lineHeight: 1,
-                textAlign: "center",
-                // Gradient: transparent top → solid color — creates the "emerging" feel
-                background: `linear-gradient(to bottom, transparent 0%, ${f.ink} 60%)`,
+                background: `linear-gradient(to bottom, transparent 0%, ${flavor.textHex} 72%)`,
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
+                margin: "10px 0 0",
                 userSelect: "none",
-              }}>
-                {f.label.toUpperCase()}
-              </h1>
-              <span style={{
-                marginTop: 10,
+                textAlign: "center",
+              }}
+            >
+              {flavor.title}
+            </h1>
+
+            <p
+              style={{
+                marginTop: 12,
                 fontFamily: "monospace",
-                fontSize: 10,
-                letterSpacing: "0.35em",
+                fontSize: 11,
+                letterSpacing: "0.24em",
                 textTransform: "uppercase",
-                color: f.ink,
-                opacity: 0.5,
-              }}>
-                Artisan · {String(i + 1).padStart(2, "0")}
-              </span>
-            </div>
-
-            {/* ── Popsicle — rises from splash, center stage ─────────────────── */}
-            <div
-              id={`pop-${i}`}
-              style={{
-                position: "absolute",
-                top: "10%",
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 280,
-                height: "64vh",
-                zIndex: 30,
+                color: flavor.textHex,
+                opacity: 0.66,
               }}
             >
-              <Image
-                src={`/images/${f.id}-pop.png`}
-                alt={f.label}
-                fill
-                className="object-contain object-center"
-                priority={i === 0}
-                style={{ filter: "drop-shadow(0 32px 64px rgba(0,0,0,0.30))" }}
-              />
-            </div>
-
-            {/* ── Splash — anchored to bottom, popsicle rises through it ─────── */}
-            <div
-              id={`splash-${i}`}
-              style={{
-                position: "absolute",
-                bottom: 0, left: 0, right: 0,
-                height: "38vh",
-                zIndex: 20,
-                transformOrigin: "bottom center",
-              }}
-            >
-              <Image
-                src={`/images/${f.id}-splash.png`}
-                alt=""
-                fill
-                className="object-cover object-bottom"
-                priority={i === 0}
-              />
-            </div>
-
+              {flavor.subtitle}
+            </p>
           </div>
-        ))}
 
-        {/* ── Flavor index dots — right edge ─────────────────────────────────── */}
-        <div style={{
-          position: "absolute", right: 22, top: "50%",
-          transform: "translateY(-50%)",
-          display: "flex", flexDirection: "column", gap: 9, zIndex: 50,
-        }}>
-          {FLAVORS.map((f, i) => (
-            <div key={i} style={{
-              width: 6, height: 6,
-              borderRadius: "50%",
-              backgroundColor: i === 0 ? f.ink : "transparent",
-              border: `1.5px solid ${FLAVORS[current.current]?.ink ?? "rgba(0,0,0,0.4)"}`,
-              transition: "all 0.3s",
-            }} />
-          ))}
-        </div>
-
-        {/* ── ORDER NOW glassmorphism pill ────────────────────────────────────── */}
-        <div style={{ position: "absolute", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 50 }}>
-          <button
+          <div
+            className={`hs-pop-${i}`}
             style={{
-              padding: "13px 36px",
-              borderRadius: 999,
-              border: "1.5px solid rgba(255,255,255,0.5)",
-              background: "rgba(255,255,255,0.18)",
-              backdropFilter: "blur(18px)",
-              WebkitBackdropFilter: "blur(18px)",
-              color: "#111",
-              fontFamily: "monospace",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.3em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              boxShadow: "0 8px 28px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseEnter={(e) => {
-              const b = e.currentTarget as HTMLButtonElement;
-              b.style.transform = "translateY(-3px)";
-              b.style.background = "rgba(255,255,255,0.34)";
-              b.style.boxShadow = "0 14px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.7)";
-            }}
-            onMouseLeave={(e) => {
-              const b = e.currentTarget as HTMLButtonElement;
-              b.style.transform = "translateY(0)";
-              b.style.background = "rgba(255,255,255,0.18)";
-              b.style.boxShadow = "0 8px 28px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6)";
+              position: "absolute",
+              left: "50%",
+              top: flavor.kind === "bar" ? "48%" : "50%",
+              transform: "translateX(-50%)",
+              width: flavor.kind === "bar" ? "min(58vw, 380px)" : "min(80vw, 580px)",
+              height: flavor.kind === "bar" ? "min(60vh, 760px)" : "min(74vh, 760px)",
+              zIndex: 20,
             }}
           >
-            Order Now
-          </button>
-        </div>
+            <div
+              className="hs-pop-float"
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  inset: "10% 18%",
+                  borderRadius: "50%",
+                  filter: "blur(60px)",
+                  background: "rgba(255,255,255,0.22)",
+                  opacity: 0.7,
+                  zIndex: 0,
+                }}
+              />
+              <Image
+                src={flavor.image}
+                alt={flavor.title}
+                fill
+                priority={i === 0}
+                className="object-contain object-center"
+                style={{
+                  filter: "drop-shadow(0 26px 54px rgba(0,0,0,0.22))",
+                  zIndex: 2,
+                }}
+              />
+            </div>
+          </div>
 
+          <div
+            className={`hs-splash-${i}`}
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: "0%",
+              height: "30vh",
+              zIndex: 5,
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              className="hs-splash-float"
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              <Image
+                src={flavor.kind === "bar" ? "/images/pistachio-bar.png" : flavor.image}
+                alt={`${flavor.title} splash`}
+                fill
+                className="object-cover object-bottom"
+                style={{ opacity: flavor.kind === "bar" ? 0.0 : 0.18 }}
+              />
+            </div>
+          </div>
+
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 15,
+              pointerEvents: "none",
+            }}
+          >
+            {Array.from({ length: 8 }).map((_, p) => (
+              <span
+                key={p}
+                className="hs-particle"
+                style={{
+                  position: "absolute",
+                  width: 8 + p * 1.6,
+                  height: 8 + p * 1.6,
+                  borderRadius: "50%",
+                  left: `${10 + p * 11}%`,
+                  top: `${16 + (p % 4) * 10}%`,
+                  background: "rgba(255,255,255,0.24)",
+                  filter: "blur(1px)",
+                  opacity: 0.55,
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <div
+        style={{
+          position: "absolute",
+          right: 20,
+          top: "50%",
+          transform: "translateY(-50%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          zIndex: 50,
+        }}
+      >
+        {FLAVORS.map((_, i) => (
+          <div
+            key={i}
+            className={`nav-dot nav-dot-${i}`}
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              border: "1.4px solid rgba(0,0,0,0.35)",
+              backgroundColor: i === 0 ? "rgba(0,0,0,0.58)" : "transparent",
+              transition: "background-color 0.25s ease",
+            }}
+          />
+        ))}
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          bottom: 28,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 60,
+        }}
+      >
+        <button
+          style={{
+            padding: "13px 34px",
+            borderRadius: 999,
+            border: "1.5px solid rgba(255,255,255,0.45)",
+            background: "rgba(255,255,255,0.18)",
+            backdropFilter: "blur(18px)",
+            WebkitBackdropFilter: "blur(18px)",
+            color: "#111",
+            fontFamily: "monospace",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            cursor: "pointer",
+            boxShadow:
+              "0 8px 28px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.55)",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            const b = e.currentTarget as HTMLButtonElement;
+            b.style.transform = "translateY(-2px)";
+            b.style.background = "rgba(255,255,255,0.32)";
+          }}
+          onMouseLeave={(e) => {
+            const b = e.currentTarget as HTMLButtonElement;
+            b.style.transform = "translateY(0)";
+            b.style.background = "rgba(255,255,255,0.18)";
+          }}
+        >
+          Order Now
+        </button>
       </div>
     </div>
   );

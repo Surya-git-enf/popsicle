@@ -12,42 +12,46 @@ export default function GlassFooter() {
   const hasAppeared = useRef(false); 
 
   useGSAP(() => {
-    gsap.set(panelRef.current, { y: 100, opacity: 0 });
+    // Hide panel initially: tiny scale and pushed down for a cinematic entrance
+    gsap.set(panelRef.current, { y: 100, scale: 0.9, opacity: 0 });
   }, { scope: panelRef });
 
-  const handleTimeUpdate = () => {
-    if (!videoRef.current || hasAppeared.current) return;
-
-    const { currentTime, duration } = videoRef.current;
-
-    // Trigger in the last 2 seconds
-    if (duration && currentTime >= duration - 2) {
+  // This fires exactly when the video reaches 100% completion
+  const handleVideoEnd = () => {
+    // 1. Reveal the floating panel
+    if (!hasAppeared.current) {
       hasAppeared.current = true; 
-
       gsap.to(panelRef.current, {
         y: 0,
+        scale: 1,
         opacity: 1,
-        duration: 1.2,
-        ease: "power3.out",
+        duration: 1.5,
+        ease: "expo.out", // Smooth, premium ease
       });
+    }
+
+    // 2. Manually restart the video so the background keeps moving
+    if (videoRef.current) {
+      videoRef.current.play();
     }
   };
 
   return (
     <section className="relative w-full h-screen bg-[#F5F5DC] overflow-hidden flex items-center justify-center z-10">
       
+      {/* Background Video - Loop removed so onEnded fires! */}
       <video
         ref={videoRef}
         autoPlay
-        loop
         muted
         playsInline
-        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleVideoEnd}
         className="absolute inset-0 w-full h-full object-cover z-0"
       >
         <source src="/videos/ice.mp4" type="video/mp4" />
       </video>
 
+      {/* Glassmorphism Floating Panel */}
       <div 
         ref={panelRef}
         className="relative z-10 w-[min(92vw,560px)] rounded-[28px] p-8 md:p-10 bg-gradient-to-b from-[#141414B8] to-[#0A0A0AE0] border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)] text-center pointer-events-auto"
@@ -56,7 +60,7 @@ export default function GlassFooter() {
         <div className="flex justify-center mb-5 w-full">
           <div className="relative w-24 h-24 rounded-[22px] overflow-hidden shadow-[0_0_18px_rgba(255,255,255,0.9),0_0_44px_rgba(255,255,255,0.42)] border border-white/20 mx-auto">
             <Image 
-              src="/images/logo.png" 
+              src="/images/logo.jpg" 
               alt="Playful logo" 
               fill
               className="object-cover"

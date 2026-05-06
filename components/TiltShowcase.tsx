@@ -10,74 +10,225 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger);
 
 const FLAVORS = [
-  { id: "chocolate", name: "Chocolate" },
-  { id: "strawberry", name: "Strawberry" },
-  { id: "vanilla", name: "Vanilla" },
-  { id: "pistachio", name: "Pistachio" },
+  {
+    id: "chocolate",
+    label: "Chocolate",
+    bgHex: "#F2C94C",
+    textHex: "#4A2311",
+    popImage: "/images/pop-chocolate.png",
+    tagline: "Dark & Rich",
+  },
+  {
+    id: "strawberry",
+    label: "Strawberry",
+    bgHex: "#00FFFF",
+    textHex: "#E91E63",
+    popImage: "/images/pop-strawberry.png",
+    tagline: "Bold & Bright",
+  },
+  {
+    id: "vanilla",
+    label: "Vanilla",
+    bgHex: "#3E2723",
+    textHex: "#FFF3E0",
+    popImage: "/images/pop-vanilla.png",
+    tagline: "Classic & Smooth",
+  },
+  {
+    id: "pistachio",
+    label: "Pistachio",
+    bgHex: "#A5D6A7",
+    textHex: "#1B5E20",
+    popImage: "/images/pop-pistachio.png",
+    tagline: "Nutty & Fresh",
+  },
 ];
 
 export default function TiltShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(() => {
-    gsap.set(".showcase-pop", { rotation: 35, transformOrigin: "center center" });
+  useGSAP(
+    () => {
+      // Set all popsicle images in cards to rotation: 35 initially
+      gsap.set(".card-pop-image", { rotation: 35 });
 
-    ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: "top center",
-      onEnter: () => {
-        gsap.to(".showcase-pop", {
-          rotation: 0,
-          duration: 1.2,
-          delay: 1,
-          ease: "elastic.out(1, 0.75)",
-          stagger: 0.1
-        });
-      },
-    });
-  }, { scope: sectionRef });
+      // When section enters viewport: wait 1 second, then snap all to 0
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top 75%",
+        once: true,
+        onEnter: () => {
+          gsap.to(".card-pop-image", {
+            rotation: 0,
+            ease: "elastic.out(1, 0.75)",
+            duration: 1.4,
+            delay: 1,
+            stagger: 0.1,
+          });
+        },
+      });
+    },
+    { scope: sectionRef }
+  );
 
   return (
-    <section ref={sectionRef} className="relative w-full min-h-screen bg-[#F5F5DC] flex flex-col items-center justify-center py-20 z-20">
-      <div className="container mx-auto px-4 w-full">
-        
-        <h2 className="text-4xl md:text-6xl text-center font-bold text-[#3E2723] mb-16 tracking-tight">
-          Explore the Collection
+    <section
+      ref={sectionRef}
+      className="w-full"
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#F5F5DC",
+        padding: "80px 24px",
+        boxSizing: "border-box",
+      }}
+    >
+      {/* Section header */}
+      <div className="text-center mb-16">
+        <p
+          className="font-sans uppercase tracking-[0.25em] text-xs mb-3"
+          style={{ color: "#888" }}
+        >
+          Our Collection
+        </p>
+        <h2
+          className="font-serif"
+          style={{
+            fontSize: "clamp(40px, 6vw, 80px)",
+            fontWeight: 800,
+            letterSpacing: "-0.03em",
+            lineHeight: 1,
+            color: "#1a1a1a",
+          }}
+        >
+          Pick Your Flavor
         </h2>
+        <div
+          className="mx-auto mt-4"
+          style={{
+            width: 48,
+            height: 3,
+            backgroundColor: "#1a1a1a",
+            borderRadius: 2,
+          }}
+        />
+      </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-7xl mx-auto">
-          {FLAVORS.map((flavor) => (
-            <div key={flavor.id} className="flex flex-col w-full h-[450px] md:h-[550px]">
-              
-              {/* 80% Height - Image centered */}
-              <div className="h-[80%] w-full relative flex items-center justify-center">
-                <div className="relative w-[80%] h-[90%]">
-                  <Image
-                    src={`/images/${flavor.id}-pop.png`}
-                    alt={flavor.name}
-                    fill
-                    className="showcase-pop object-contain object-center drop-shadow-2xl"
-                  />
-                </div>
+      {/* CSS Grid — 4 cards side-by-side */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "20px",
+          maxWidth: 1200,
+          margin: "0 auto",
+        }}
+        className="max-lg:grid-cols-2 max-sm:grid-cols-1"
+      >
+        {FLAVORS.map((flavor) => (
+          <div
+            key={flavor.id}
+            className="group"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: 500,
+              borderRadius: 24,
+              overflow: "hidden",
+              backgroundColor: flavor.bgHex,
+              boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+              cursor: "pointer",
+              transition: "box-shadow 0.3s ease, transform 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.transform =
+                "translateY(-6px)";
+              (e.currentTarget as HTMLDivElement).style.boxShadow =
+                "0 20px 60px rgba(0,0,0,0.18)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.transform =
+                "translateY(0)";
+              (e.currentTarget as HTMLDivElement).style.boxShadow =
+                "0 4px 24px rgba(0,0,0,0.08)";
+            }}
+          >
+            {/* Top 80%: popsicle image */}
+            <div
+              style={{
+                flex: "0 0 80%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                className="card-pop-image"
+                style={{
+                  position: "relative",
+                  width: "70%",
+                  height: "90%",
+                }}
+              >
+                <Image
+                  src={flavor.popImage}
+                  alt={flavor.label}
+                  fill
+                  className="object-contain object-center"
+                />
               </div>
-
-              {/* 10% Height - Name */}
-              <div className="h-[10%] w-full flex items-center justify-center">
-                <h3 className="text-lg md:text-xl font-bold text-[#3E2723] uppercase tracking-widest m-0">
-                  {flavor.name}
-                </h3>
-              </div>
-
-              {/* 10% Height - Button */}
-              <div className="h-[10%] w-full flex items-center justify-center">
-                <button className="px-6 py-2.5 bg-[#3E2723] text-[#F5F5DC] text-xs md:text-sm font-bold rounded-full hover:bg-black transition-colors shadow-lg">
-                  ORDER NOW
-                </button>
-              </div>
-
             </div>
-          ))}
-        </div>
+
+            {/* Middle 10%: flavor name */}
+            <div
+              style={{
+                flex: "0 0 10%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderTop: `1px solid rgba(0,0,0,0.07)`,
+              }}
+            >
+              <span
+                className="font-sans font-black uppercase tracking-[0.15em] text-sm"
+                style={{ color: flavor.textHex }}
+              >
+                {flavor.label}
+              </span>
+            </div>
+
+            {/* Bottom 10%: ORDER NOW button */}
+            <div
+              style={{
+                flex: "0 0 10%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderTop: `1px solid rgba(0,0,0,0.06)`,
+              }}
+            >
+              <button
+                className="font-sans text-xs font-bold uppercase tracking-widest rounded-full px-5 py-2"
+                style={{
+                  backgroundColor: flavor.textHex,
+                  color: flavor.bgHex,
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "opacity 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.opacity = "0.82";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.opacity = "1";
+                }}
+              >
+                Order Now
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

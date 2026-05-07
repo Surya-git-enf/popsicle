@@ -70,11 +70,12 @@ export default function HeroSequence() {
       gsap.set(bgRef.current, { backgroundColor: FLAVORS[0].bg });
 
       FLAVORS.forEach((_, i) => {
-        const popSelector = `.hs-pop-${i}`;
-        const splashSelector = `.hs-splash-${i}`;
-        const textSelector = `.hs-text-${i}`;
+        gsap.set(`.hs-text-${i}`, {
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 40,
+        });
 
-        gsap.set(popSelector, {
+        gsap.set(`.hs-pop-${i}`, {
           opacity: i === 0 ? 1 : 0,
           y: i === 0 ? 0 : 80,
           x: i === 0 ? 0 : -10,
@@ -85,16 +86,31 @@ export default function HeroSequence() {
           transformOrigin: "50% 50%",
         });
 
-        gsap.set(splashSelector, {
+        gsap.set(`.hs-splash-${i}`, {
           opacity: i === 0 ? 1 : 0,
           y: i === 0 ? 0 : 70,
           scaleX: i === 0 ? 1 : 0.96,
           scaleY: i === 0 ? 1 : 0.94,
         });
 
-        gsap.set(textSelector, {
+        gsap.set(`.hs-wave-${i}`, {
           opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 60,
+          y: i === 0 ? 0 : 50,
+          scaleX: i === 0 ? 1 : 0.96,
+          scaleY: i === 0 ? 1 : 0.94,
+        });
+
+        gsap.set(`.hs-shadow-${i}`, {
+          opacity: i === 0 ? 0.18 : 0,
+          scale: i === 0 ? 1 : 0.8,
+          y: i === 0 ? 0 : 30,
+        });
+
+        gsap.set(`.hs-bgword-${i}`, {
+          opacity: i === 0 ? 0.14 : 0,
+          y: i === 0 ? 0 : 20,
+          x: i === 0 ? 0 : -12,
+          scale: i === 0 ? 1 : 0.98,
         });
       });
 
@@ -109,8 +125,8 @@ export default function HeroSequence() {
       });
 
       gsap.to(".hs-pop-float", {
-        scale: 1.01,
-        duration: 4.5,
+        x: 6,
+        duration: 4.8,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut",
@@ -128,12 +144,23 @@ export default function HeroSequence() {
         stagger: 0.15,
       });
 
+      gsap.to(".hs-wave-float", {
+        y: -6,
+        scaleX: 1.02,
+        scaleY: 1.01,
+        duration: 4.6,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        stagger: 0.15,
+      });
+
       gsap.to(".hs-sheen", {
         xPercent: 240,
-        duration: 4.6,
+        duration: 4.2,
         repeat: -1,
         ease: "none",
-        stagger: 0.2,
+        stagger: 0.18,
       });
 
       gsap.to(".hs-particle", {
@@ -158,7 +185,7 @@ export default function HeroSequence() {
           bgRef.current,
           {
             backgroundColor: FLAVORS[index].bg,
-            duration: 1,
+            duration: 0.85,
             ease: "power2.inOut",
           },
           0
@@ -166,32 +193,57 @@ export default function HeroSequence() {
 
         tl.to(
           `.hs-text-${prev}`,
-          { opacity: 0, y: -24, duration: 0.35, ease: "power2.inOut" },
+          { opacity: 0, y: -18, duration: 0.28, ease: "power2.inOut" },
           0
         );
         tl.to(
           `.hs-pop-${prev}`,
-          { opacity: 0, y: -34, scale: 0.9, rotateX: 14, rotateZ: -6, duration: 0.35, ease: "power2.inOut" },
+          {
+            opacity: 0,
+            y: -28,
+            scale: 0.9,
+            rotateX: 14,
+            rotateZ: -6,
+            duration: 0.28,
+            ease: "power2.inOut",
+          },
           0
         );
         tl.to(
           `.hs-splash-${prev}`,
-          { opacity: 0, y: -16, scaleX: 0.96, scaleY: 0.94, duration: 0.3, ease: "power2.inOut" },
+          { opacity: 0, y: -14, scaleX: 0.96, scaleY: 0.94, duration: 0.25, ease: "power2.inOut" },
+          0
+        );
+        tl.to(
+          `.hs-wave-${prev}`,
+          { opacity: 0, y: -12, scaleX: 0.96, scaleY: 0.94, duration: 0.25, ease: "power2.inOut" },
+          0
+        );
+        tl.to(
+          `.hs-bgword-${prev}`,
+          { opacity: 0, y: -10, scale: 0.98, duration: 0.25, ease: "power2.inOut" },
           0
         );
 
         tl.fromTo(
           `.hs-text-${index}`,
-          { opacity: 0, y: 42 },
-          { opacity: 1, y: 0, duration: 0.85, ease: "power4.out" },
-          0.14
+          { opacity: 0, y: 34 },
+          { opacity: 1, y: 0, duration: 0.62, ease: "power4.out" },
+          0.1
+        );
+
+        tl.fromTo(
+          `.hs-bgword-${index}`,
+          { opacity: 0, y: 18, x: -14, scale: 0.98 },
+          { opacity: 0.14, y: 0, x: 0, scale: 1, duration: 0.6, ease: "power3.out" },
+          0.1
         );
 
         tl.fromTo(
           `.hs-splash-${index}`,
           {
             opacity: 0,
-            y: 68,
+            y: 60,
             scaleX: 0.94,
             scaleY: 0.92,
             filter: "blur(10px)",
@@ -202,10 +254,38 @@ export default function HeroSequence() {
             scaleX: 1,
             scaleY: 1,
             filter: "blur(0px)",
-            duration: 0.95,
+            duration: 0.7,
             ease: "power3.out",
           },
-          0.22
+          0.18
+        );
+
+        tl.fromTo(
+          `.hs-wave-${index}`,
+          {
+            opacity: 0,
+            y: 72,
+            scaleX: 0.93,
+            scaleY: 0.9,
+            filter: "blur(8px)",
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scaleX: 1,
+            scaleY: 1,
+            filter: "blur(0px)",
+            duration: 0.72,
+            ease: "power3.out",
+          },
+          0.2
+        );
+
+        tl.fromTo(
+          `.hs-shadow-${index}`,
+          { opacity: 0, y: 34, scale: 0.8 },
+          { opacity: 0.22, y: 0, scale: 1, duration: 0.6, ease: "power2.out" },
+          0.3
         );
 
         tl.fromTo(
@@ -225,50 +305,45 @@ export default function HeroSequence() {
             scale: 1,
             rotateX: 0,
             rotateZ: 0,
-            duration: 1.08,
+            duration: 0.9,
             ease: "power3.out",
           },
-          0.28
+          0.24
         );
 
         tl.to(
           `.hs-pop-${index}`,
-          { y: -3, duration: 0.16, ease: "power2.out" },
-          ">-0.06"
+          { y: -3, duration: 0.12, ease: "power2.out" },
+          ">-0.03"
         );
         tl.to(
           `.hs-pop-${index}`,
-          { y: 0, duration: 0.22, ease: "bounce.out" },
+          { y: 0, duration: 0.2, ease: "bounce.out" },
           ">"
         );
 
         tl.to(
-          `.hs-splash-${index}`,
-          {
-            scaleX: 1.04,
-            scaleY: 0.98,
-            y: -4,
-            duration: 0.22,
-            ease: "power2.out",
-          },
-          0.42
-        );
-        tl.to(
-          `.hs-splash-${index}`,
-          {
-            scaleX: 1,
-            scaleY: 1,
-            y: 0,
-            duration: 0.4,
-            ease: "sine.out",
-          },
-          0.62
+          `.hs-shadow-${index}`,
+          { opacity: 0.28, scale: 1.04, duration: 0.18, ease: "power2.out" },
+          0.45
         );
 
-        gsap.to(".nav-dot", { backgroundColor: "transparent", duration: 0.25 });
+        tl.to(
+          `.hs-wave-${index}`,
+          { y: -5, scaleX: 1.03, scaleY: 0.99, duration: 0.2, ease: "power2.out" },
+          0.45
+        );
+
+        tl.to(
+          `.hs-wave-${index}`,
+          { y: 0, scaleX: 1, scaleY: 1, duration: 0.28, ease: "sine.out" },
+          0.64
+        );
+
+        gsap.to(".nav-dot", { backgroundColor: "transparent", duration: 0.2 });
         gsap.to(`.nav-dot-${index}`, {
           backgroundColor: "rgba(0,0,0,0.58)",
-          duration: 0.25,
+          duration: 0.2,
         });
       }
 
@@ -277,14 +352,14 @@ export default function HeroSequence() {
         start: "top top",
         end: `+=${total * 120}%`,
         pin: true,
-        scrub: 1.1,
+        scrub: 0.9,
         anticipatePin: 1,
         fastScrollEnd: true,
         invalidateOnRefresh: true,
         snap: {
           snapTo: 1 / total,
-          duration: { min: 0.45, max: 0.95 },
-          delay: 0.04,
+          duration: { min: 0.3, max: 0.6 },
+          delay: 0,
           ease: "power2.inOut",
         },
         onUpdate: (self) => {
@@ -347,6 +422,58 @@ export default function HeroSequence() {
           overflow: hidden;
         }
 
+        .ice-hero-wave {
+          position: absolute;
+          left: 50%;
+          bottom: 5%;
+          width: min(100vw, 820px);
+          height: 28vh;
+          transform: translateX(-50%);
+          z-index: 14;
+          pointer-events: none;
+          will-change: transform, opacity;
+        }
+
+        .ice-hero-shadow {
+          position: absolute;
+          left: 50%;
+          bottom: 18%;
+          width: min(46vw, 360px);
+          height: 70px;
+          transform: translateX(-50%);
+          border-radius: 50%;
+          background: radial-gradient(
+            ellipse at center,
+            rgba(0, 0, 0, 0.28) 0%,
+            rgba(0, 0, 0, 0.18) 32%,
+            rgba(0, 0, 0, 0.08) 55%,
+            transparent 72%
+          );
+          filter: blur(18px);
+          z-index: 18;
+          pointer-events: none;
+          will-change: transform, opacity, filter;
+        }
+
+        .ice-hero-bgword {
+          position: absolute;
+          left: 50%;
+          top: 54%;
+          transform: translate(-50%, -50%);
+          z-index: 8;
+          pointer-events: none;
+          user-select: none;
+          white-space: nowrap;
+          font-family: Georgia, "Times New Roman", serif;
+          font-weight: 900;
+          font-size: clamp(54px, 12vw, 180px);
+          letter-spacing: -0.08em;
+          line-height: 0.9;
+          opacity: 0.14;
+          mix-blend-mode: soft-light;
+          filter: blur(0.2px);
+        }
+
         .ice-hero-float {
           position: relative;
           width: 100%;
@@ -402,6 +529,22 @@ export default function HeroSequence() {
             height: 32vh;
             bottom: 0;
           }
+
+          .ice-hero-wave {
+            width: 100vw;
+            height: 24vh;
+            bottom: 6%;
+          }
+
+          .ice-hero-shadow {
+            width: 58vw;
+            bottom: 19%;
+          }
+
+          .ice-hero-bgword {
+            top: 56%;
+            font-size: clamp(44px, 16vw, 120px);
+          }
         }
 
         @media (max-width: 420px) {
@@ -413,6 +556,20 @@ export default function HeroSequence() {
 
           .ice-hero-splash {
             height: 28vh;
+          }
+
+          .ice-hero-wave {
+            height: 22vh;
+          }
+
+          .ice-hero-shadow {
+            width: 66vw;
+            bottom: 20%;
+          }
+
+          .ice-hero-bgword {
+            top: 57%;
+            font-size: clamp(40px, 18vw, 104px);
           }
         }
       `}</style>
@@ -450,6 +607,15 @@ export default function HeroSequence() {
 
         {FLAVORS.map((flavor, i) => (
           <section key={flavor.id} style={{ position: "absolute", inset: 0, zIndex: 2 }}>
+            <div
+              className={`hs-bgword-${i} ice-hero-bgword`}
+              style={{
+                color: flavor.textHex,
+              }}
+            >
+              {flavor.title}
+            </div>
+
             <div className={`hs-text-${i} ice-hero-text`}>
               <p
                 style={{
@@ -462,7 +628,7 @@ export default function HeroSequence() {
                   opacity: 0.72,
                 }}
               >
-                Ice Cream Store
+                Lickers
               </p>
 
               <h1
@@ -499,6 +665,8 @@ export default function HeroSequence() {
               </p>
             </div>
 
+            <div className={`hs-shadow-${i} ice-hero-shadow`} />
+
             <div className={`hs-pop-${i} ice-hero-pop`}>
               <div className="hs-pop-float ice-hero-float">
                 <div className="ice-glow" />
@@ -516,7 +684,54 @@ export default function HeroSequence() {
               </div>
             </div>
 
-            <div className={`hs-splash-${i} ice-hero-splash`}>
+            <div className={`hs-wave-${i} ice-hero-wave`}>
+              <div className="hs-wave-float ice-hero-float">
+                <svg
+                  viewBox="0 0 800 260"
+                  preserveAspectRatio="none"
+                  style={{ width: "100%", height: "100%", overflow: "visible" }}
+                >
+                  <defs>
+                    <linearGradient id={`wave-grad-${i}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="rgba(255,255,255,0.92)" />
+                      <stop offset="55%" stopColor="rgba(255,255,255,0.68)" />
+                      <stop offset="100%" stopColor="rgba(255,255,255,0.24)" />
+                    </linearGradient>
+                    <linearGradient id={`sheen-grad-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="rgba(255,255,255,0)" />
+                      <stop offset="48%" stopColor="rgba(255,255,255,0.55)" />
+                      <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                    </linearGradient>
+                    <filter id={`wave-blur-${i}`}>
+                      <feGaussianBlur stdDeviation="2.8" />
+                    </filter>
+                  </defs>
+
+                  <path
+                    d="M0,132 C72,88 146,182 220,138 C300,92 370,178 448,136 C528,95 598,182 676,140 C735,108 770,98 800,116 L800,260 L0,260 Z"
+                    fill={`url(#wave-grad-${i})`}
+                    filter={`url(#wave-blur-${i})`}
+                    opacity="0.95"
+                  />
+                  <path
+                    d="M0,140 C72,94 146,186 220,144 C300,98 370,182 448,142 C528,99 598,184 676,146 C735,114 770,104 800,122 L800,260 L0,260 Z"
+                    fill="rgba(255,255,255,0.16)"
+                  />
+                  <rect
+                    x="0"
+                    y="112"
+                    width="800"
+                    height="48"
+                    fill={`url(#sheen-grad-${i})`}
+                    opacity="0.45"
+                  />
+                </svg>
+
+                <div className="hs-sheen" />
+              </div>
+            </div>
+
+              <div className={`hs-splash-${i} ice-hero-splash`}>
               <div className="hs-splash-float ice-hero-float">
                 <Image
                   src={flavor.splash}
@@ -529,7 +744,6 @@ export default function HeroSequence() {
                     filter: "drop-shadow(0 14px 24px rgba(0,0,0,0.12))",
                   }}
                 />
-                <div className="hs-sheen" />
               </div>
             </div>
 
@@ -582,7 +796,7 @@ export default function HeroSequence() {
                 borderRadius: "50%",
                 border: "1.4px solid rgba(0,0,0,0.35)",
                 backgroundColor: i === 0 ? "rgba(0,0,0,0.58)" : "transparent",
-                transition: "background-color 0.25s ease",
+                transition: "background-color 0.2s ease",
               }}
             />
           ))}
@@ -591,3 +805,4 @@ export default function HeroSequence() {
     </>
   );
 }
+                

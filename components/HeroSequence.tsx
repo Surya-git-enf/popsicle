@@ -13,53 +13,64 @@ type Flavor = {
   id: string;
   title: string;
   subtitle: string;
+  year: string;
   bg: string;
   textHex: string;
   pop: string;
   splash: string;
+  accent: string;
 };
 
 const FLAVORS: Flavor[] = [
   {
     id: "chocolate",
     title: "CHOCOLATE",
-    subtitle: "Rich · Smooth · Bold",
-    bg: "#F2C94C",
+    subtitle: "Rich, smooth and bold",
+    year: "May 1, 2026",
+    bg: "#EBCB67",
     textHex: "#4A2311",
     pop: "/images/chocolate-pop.png",
     splash: "/images/chocolate-splash.png",
+    accent: "rgba(74,35,17,0.16)",
   },
   {
     id: "strawberry",
     title: "STRAWBERRY",
-    subtitle: "Fresh · Sweet · Bright",
-    bg: "#00FFFF",
-    textHex: "#E91E63",
+    subtitle: "Fresh, bright and sweet",
+    year: "Apr 25, 2026",
+    bg: "#F7B8C8",
+    textHex: "#C2185B",
     pop: "/images/strawberry-pop.png",
     splash: "/images/strawberry-splash.png",
+    accent: "rgba(194,24,91,0.16)",
   },
   {
     id: "vanilla",
     title: "VANILLA",
-    subtitle: "Soft · Creamy · Classic",
-    bg: "#3E2723",
-    textHex: "#FFF3E0",
+    subtitle: "Soft, clean and classic",
+    year: "Apr 23, 2026",
+    bg: "#D8C7AE",
+    textHex: "#3E2723",
     pop: "/images/vanilla-pop.png",
     splash: "/images/vanilla-splash.png",
+    accent: "rgba(62,39,35,0.14)",
   },
   {
     id: "pistachio",
     title: "PISTACHIO",
-    subtitle: "Nutty · Fresh · Smooth",
-    bg: "#A5D6A7",
+    subtitle: "Nutty, fresh and premium",
+    year: "Apr 18, 2026",
+    bg: "#C9D98E",
     textHex: "#1B5E20",
     pop: "/images/pistachio-pop.png",
     splash: "/images/pistachio-splash.png",
+    accent: "rgba(27,94,32,0.14)",
   },
 ];
 
 export default function HeroSequence() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
 
@@ -70,48 +81,57 @@ export default function HeroSequence() {
       gsap.set(bgRef.current, { backgroundColor: FLAVORS[0].bg });
 
       FLAVORS.forEach((_, i) => {
-        if (i === 0) {
-          gsap.set(`.hs-text-${i}`, { opacity: 1, y: 0 });
-          gsap.set(`.hs-pop-${i}`, { opacity: 1, y: 0, scale: 1, rotation: 0 });
-          gsap.set(`.hs-splash-${i}`, { opacity: 1, y: 0, scale: 1 });
-        } else {
-          gsap.set(`.hs-text-${i}`, { opacity: 0, y: 70 });
-          gsap.set(`.hs-pop-${i}`, { opacity: 0, y: 100, scale: 0.92, rotation: 8 });
-          gsap.set(`.hs-splash-${i}`, { opacity: 0, y: 48, scale: 0.98 });
-        }
+        gsap.set(`.hero-text-${i}`, {
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 50,
+        });
+
+        gsap.set(`.hero-card-${i}`, {
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 80,
+          scale: i === 0 ? 1 : 0.94,
+          rotateX: i === 0 ? 0 : 10,
+          rotateY: i === 0 ? 0 : -8,
+        });
+
+        gsap.set(`.hero-splash-${i}`, {
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 30,
+          scale: i === 0 ? 1 : 0.98,
+        });
       });
 
-      gsap.to(".hs-pop-float", {
+      gsap.to(".float-pop", {
         y: -14,
-        rotation: 1.8,
-        duration: 2.6,
+        rotation: 1.2,
+        duration: 2.8,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut",
-        stagger: 0.18,
+        stagger: 0.2,
       });
 
-      gsap.to(".hs-splash-float", {
-        y: -8,
-        scale: 1.03,
-        duration: 3.4,
+      gsap.to(".float-splash", {
+        y: 8,
+        scale: 1.02,
+        duration: 3.6,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut",
-        stagger: 0.18,
+        stagger: 0.2,
       });
 
-      gsap.to(".hs-particle", {
-        y: -10,
+      gsap.to(".float-particle", {
+        y: -12,
         opacity: 0.9,
-        duration: 2.4,
+        duration: 2.6,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut",
         stagger: 0.1,
       });
 
-      function animateIn(index: number) {
+      function animateTo(index: number) {
         if (activeRef.current === index) return;
 
         const prev = activeRef.current;
@@ -130,44 +150,42 @@ export default function HeroSequence() {
         );
 
         tl.to(
-          `.hs-text-${prev}`,
-          { opacity: 0, y: -34, duration: 0.4, ease: "power2.inOut" },
+          `.hero-text-${prev}`,
+          { opacity: 0, y: -30, duration: 0.4, ease: "power2.inOut" },
           0
         );
         tl.to(
-          `.hs-pop-${prev}`,
-          { opacity: 0, y: -42, scale: 0.92, rotation: -6, duration: 0.4, ease: "power2.inOut" },
+          `.hero-card-${prev}`,
+          { opacity: 0, y: -50, scale: 0.92, rotateX: 12, rotateY: -10, duration: 0.45, ease: "power2.inOut" },
           0
         );
         tl.to(
-          `.hs-splash-${prev}`,
+          `.hero-splash-${prev}`,
           { opacity: 0, y: -20, scale: 0.96, duration: 0.35, ease: "power2.inOut" },
           0
         );
 
         tl.fromTo(
-          `.hs-text-${index}`,
-          { opacity: 0, y: 60 },
-          { opacity: 1, y: 0, duration: 0.95, ease: "power4.out" },
+          `.hero-text-${index}`,
+          { opacity: 0, y: 44 },
+          { opacity: 1, y: 0, duration: 0.85, ease: "power4.out" },
           0.18
         );
-
         tl.fromTo(
-          `.hs-pop-${index}`,
-          { opacity: 0, y: 105, scale: 0.9, rotation: 8 },
-          { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 1.15, ease: "expo.out" },
-          0.1
+          `.hero-card-${index}`,
+          { opacity: 0, y: 72, scale: 0.92, rotateX: 10, rotateY: -8 },
+          { opacity: 1, y: 0, scale: 1, rotateX: 0, rotateY: 0, duration: 1.1, ease: "expo.out" },
+          0.14
         );
-
         tl.fromTo(
-          `.hs-splash-${index}`,
-          { opacity: 0, y: 55, scale: 0.98 },
-          { opacity: 1, y: 0, scale: 1, duration: 1, ease: "power3.out" },
+          `.hero-splash-${index}`,
+          { opacity: 0, y: 20, scale: 0.98 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.95, ease: "power3.out" },
           0.22
         );
 
-        gsap.to(".nav-dot", { backgroundColor: "transparent", duration: 0.25 });
-        gsap.to(`.nav-dot-${index}`, {
+        gsap.to(".dot", { backgroundColor: "transparent", duration: 0.25 });
+        gsap.to(`.dot-${index}`, {
           backgroundColor: "rgba(0,0,0,0.58)",
           duration: 0.25,
         });
@@ -178,18 +196,24 @@ export default function HeroSequence() {
         start: "top top",
         end: `+=${total * 120}%`,
         pin: true,
-        scrub: 1.15,
+        scrub: 1,
         anticipatePin: 1,
-        fastScrollEnd: true,
         snap: {
           snapTo: 1 / total,
-          duration: { min: 0.55, max: 1.05 },
-          delay: 0.05,
+          duration: { min: 0.45, max: 0.9 },
+          delay: 0.03,
           ease: "power2.inOut",
         },
         onUpdate: (self) => {
           const index = Math.round(self.progress * total);
-          animateIn(index);
+          animateTo(index);
+
+          if (stageRef.current) {
+            const shift = -self.progress * 40;
+            gsap.set(stageRef.current, {
+              xPercent: shift,
+            });
+          }
         },
       });
     },
@@ -199,322 +223,421 @@ export default function HeroSequence() {
   return (
     <>
       <style jsx global>{`
-        .ice-hero-shell {
+        .ice-shell {
           position: relative;
           width: 100%;
           height: 100vh;
           overflow: hidden;
+          perspective: 1400px;
+          transform-style: preserve-3d;
           touch-action: pan-y;
           -webkit-tap-highlight-color: transparent;
         }
 
-        .ice-hero-text {
+        .ice-grid {
           position: absolute;
-          top: 7%;
-          left: 0;
-          right: 0;
+          inset: 0;
+          display: grid;
+          grid-template-columns: 1.05fr 0.95fr;
+          gap: clamp(18px, 2vw, 32px);
+          padding: clamp(18px, 3vw, 40px);
+          z-index: 3;
+          transform-style: preserve-3d;
+        }
+
+        .ice-left {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          z-index: 10;
-          pointer-events: none;
-        }
-
-        .ice-hero-pop {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          transform: translateX(-50%);
-          z-index: 20;
-          width: min(82vw, 580px);
-          height: min(74vh, 780px);
-        }
-
-        .ice-hero-splash {
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: -1%;
-          height: 34vh;
+          justify-content: space-between;
+          min-width: 0;
           z-index: 5;
-          pointer-events: none;
         }
 
-        .ice-hero-float {
+        .ice-right {
+          position: relative;
+          min-width: 0;
+          border-radius: 32px;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.14);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12);
+          transform-style: preserve-3d;
+        }
+
+        .section-label {
+          font-family: monospace;
+          font-size: 11px;
+          letter-spacing: 0.34em;
+          text-transform: uppercase;
+          opacity: 0.65;
+        }
+
+        .resource-title {
+          margin: 0;
+          font-size: clamp(44px, 7vw, 96px);
+          line-height: 0.95;
+          letter-spacing: -0.06em;
+          font-family: Georgia, "Times New Roman", serif;
+          font-weight: 900;
+          background: linear-gradient(to bottom, transparent 0%, currentColor 70%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+          margin: 10px 0 0;
+          font-family: monospace;
+          font-size: 12px;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          opacity: 0.68;
+        }
+
+        .meta-list {
+          margin-top: 28px;
+          display: grid;
+          gap: 14px;
+          max-width: 420px;
+        }
+
+        .meta-card {
+          border-top: 1px solid rgba(0, 0, 0, 0.14);
+          padding-top: 14px;
+          display: flex;
+          justify-content: space-between;
+          gap: 18px;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .meta-card strong {
+          font-family: monospace;
+          font-size: 11px;
+          letter-spacing: 0.24em;
+          text-transform: uppercase;
+          opacity: 0.6;
+          min-width: 110px;
+        }
+
+        .stage {
+          position: absolute;
+          inset: 0;
+          transform-style: preserve-3d;
+        }
+
+        .stage-bg {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+        }
+
+        .stage-inner {
+          position: absolute;
+          inset: 0;
+          z-index: 2;
+          overflow: hidden;
+        }
+
+        .hero-card {
+          position: absolute;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          transform-style: preserve-3d;
+        }
+
+        .card-shell {
+          position: relative;
+          width: min(72vw, 560px);
+          height: min(72vh, 760px);
+          transform-style: preserve-3d;
+        }
+
+        .float-pop {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          transform-style: preserve-3d;
+        }
+
+        .float-splash {
           position: relative;
           width: 100%;
           height: 100%;
         }
 
-        .ice-glow {
+        .splash-wrap {
           position: absolute;
-          inset: 12% 18%;
+          left: 50%;
+          bottom: -6%;
+          width: min(100%, 620px);
+          height: 34vh;
+          transform: translateX(-50%);
+          opacity: 1;
+        }
+
+        .glow {
+          position: absolute;
+          inset: 15% 18%;
           border-radius: 50%;
-          filter: blur(64px);
-          background: rgba(255, 255, 255, 0.24);
-          opacity: 0.8;
-          z-index: 0;
+          filter: blur(72px);
+          opacity: 0.75;
+          background: rgba(255, 255, 255, 0.28);
         }
 
-        .ice-particle {
+        .dot-stack {
           position: absolute;
+          right: 24px;
+          top: 50%;
+          transform: translateY(-50%);
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          z-index: 30;
+        }
+
+        .dot {
+          width: 7px;
+          height: 7px;
           border-radius: 999px;
-          background: rgba(255, 255, 255, 0.25);
-          filter: blur(1px);
-          opacity: 0.55;
+          border: 1.4px solid rgba(0, 0, 0, 0.35);
+          background: transparent;
         }
 
-        @media (max-width: 768px) {
-          .ice-hero-text {
-            top: 6%;
+        .cta {
+          position: absolute;
+          left: 50%;
+          bottom: 26px;
+          transform: translateX(-50%);
+          z-index: 30;
+        }
+
+        .cta button {
+          padding: 13px 34px;
+          border-radius: 999px;
+          border: 1.5px solid rgba(255, 255, 255, 0.45);
+          background: rgba(255, 255, 255, 0.18);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          color: #111;
+          font-family: monospace;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.28em;
+          text-transform: uppercase;
+          cursor: pointer;
+          box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        }
+
+        .grain {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          opacity: 0.18;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+          background-size: 300px 300px;
+          mix-blend-mode: overlay;
+        }
+
+        @media (max-width: 900px) {
+          .ice-grid {
+            grid-template-columns: 1fr;
+            padding: 16px;
           }
 
-          .ice-hero-pop {
-            top: 52%;
-            width: min(92vw, 430px);
-            height: min(60vh, 560px);
+          .ice-left {
+            position: absolute;
+            inset: 16px 16px auto 16px;
+            z-index: 8;
+            pointer-events: none;
           }
 
-          .ice-hero-splash {
-            height: 30vh;
-            bottom: 0;
+          .ice-right {
+            position: absolute;
+            inset: 0;
+            border-radius: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+          }
+
+          .card-shell {
+            width: min(88vw, 480px);
+            height: min(56vh, 560px);
+          }
+
+          .dot-stack {
+            right: 14px;
+          }
+
+          .cta {
+            bottom: 18px;
+          }
+
+          .meta-list {
+            display: none;
           }
         }
 
-        @media (max-width: 420px) {
-          .ice-hero-pop {
-            top: 53%;
+        @media (max-width: 480px) {
+          .resource-title {
+            font-size: 38px;
+          }
+
+          .subtitle {
+            font-size: 10px;
+          }
+
+          .card-shell {
             width: 92vw;
-            height: 56vh;
-          }
-
-          .ice-hero-splash {
-            height: 28vh;
+            height: 52vh;
           }
         }
       `}</style>
 
-      <div ref={containerRef} className="ice-hero-shell">
-        <div ref={bgRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+      <div ref={containerRef} className="ice-shell">
+        <div ref={bgRef} className="stage-bg" />
 
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 1,
-            pointerEvents: "none",
-            background:
-              "radial-gradient(circle at center, rgba(255,255,255,0.18), transparent 58%), linear-gradient(to top, rgba(255,255,255,0.18), transparent 32%)",
-            mixBlendMode: "soft-light",
-          }}
-        />
+        <div className="grain" />
 
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 1,
-            pointerEvents: "none",
-            opacity: 0.2,
-            backgroundImage:
-              'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\' opacity=\'0.07\'/%3E%3C/svg%3E")',
-            backgroundSize: "300px 300px",
-          }}
-        />
+        <div className="ice-grid">
+          <div className="ice-left">
+            <div>
+              <div className="section-label">The Resource Library</div>
 
-        {FLAVORS.map((flavor, i) => (
-          <section key={flavor.id} style={{ position: "absolute", inset: 0, zIndex: 2 }}>
-            <div className={`hs-text-${i} ice-hero-text`}>
-              <p
-                style={{
-                  margin: 0,
-                  fontFamily: "monospace",
-                  fontSize: 10,
-                  letterSpacing: "0.34em",
-                  textTransform: "uppercase",
-                  color: flavor.textHex,
-                  opacity: 0.72,
-                }}
-              >
-                Ice Cream Store · {String(i + 1).padStart(2, "0")}
-              </p>
-
-              <h1
-                style={{
-                  fontSize: "clamp(44px, 10vw, 132px)",
-                  fontWeight: 900,
-                  letterSpacing: "-0.05em",
-                  lineHeight: 0.95,
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  background: `linear-gradient(to bottom, transparent 0%, ${flavor.textHex} 72%)`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  margin: "10px 0 0",
-                  userSelect: "none",
-                  textAlign: "center",
-                }}
-              >
-                {flavor.title}
-              </h1>
-
-              <p
-                style={{
-                  marginTop: 12,
-                  fontFamily: "monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.24em",
-                  textTransform: "uppercase",
-                  color: flavor.textHex,
-                  opacity: 0.66,
-                }}
-              >
-                {flavor.subtitle}
-              </p>
-            </div>
-
-            <div className={`hs-pop-${i} ice-hero-pop`}>
-              <div className="hs-pop-float ice-hero-float">
+              {FLAVORS.map((flavor, i) => (
                 <div
-                  aria-hidden
+                  key={flavor.id}
+                  className={`hero-text-${i}`}
                   style={{
-                    position: "absolute",
-                    inset: "8% 14%",
-                    borderRadius: "50%",
-                    filter: "blur(58px)",
-                    background: "rgba(255,255,255,0.24)",
-                    opacity: 0.9,
-                    zIndex: 0,
+                    position: i === 0 ? "relative" : "absolute",
+                    opacity: i === 0 ? 1 : 0,
+                    pointerEvents: i === 0 ? "auto" : "none",
+                    color: flavor.textHex,
                   }}
-                />
-                <Image
-                  src={flavor.pop}
-                  alt={flavor.title}
-                  fill
-                  priority={i === 0}
-                  className="object-contain object-center"
-                  style={{
-                    filter: "drop-shadow(0 26px 54px rgba(0,0,0,0.22))",
-                    zIndex: 2,
-                  }}
-                />
-              </div>
-            </div>
+                >
+                  <h1 className="resource-title">{flavor.title}</h1>
+                  <p className="subtitle">{flavor.subtitle}</p>
 
-            <div className={`hs-splash-${i} ice-hero-splash`}>
-              <div className="hs-splash-float ice-hero-float">
-                <Image
-                  src={flavor.splash}
-                  alt={`${flavor.title} splash`}
-                  fill
-                  className="object-cover object-bottom"
-                  style={{
-                    opacity: 1,
-                    objectPosition: "center bottom",
-                    filter: "drop-shadow(0 16px 28px rgba(0,0,0,0.10))",
-                  }}
-                />
-              </div>
-            </div>
-
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 15,
-                pointerEvents: "none",
-              }}
-            >
-              {Array.from({ length: 8 }).map((_, p) => (
-                <span
-                  key={p}
-                  className="hs-particle"
-                  style={{
-                    width: 8 + p * 1.5,
-                    height: 8 + p * 1.5,
-                    left: `${10 + p * 11}%`,
-                    top: `${16 + (p % 4) * 10}%`,
-                  }}
-                />
+                  <div className="meta-list">
+                    <div className="meta-card">
+                      <strong>Date</strong>
+                      <span>{flavor.year}</span>
+                    </div>
+                    <div className="meta-card">
+                      <strong>Experience</strong>
+                      <span>Snap-scroll 3D motion with smooth depth layering</span>
+                    </div>
+                    <div className="meta-card">
+                      <strong>Style</strong>
+                      <span>Minimal, premium, and mobile-safe</span>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
-          </section>
-        ))}
 
-        <div
-          style={{
-            position: "absolute",
-            right: 18,
-            top: "50%",
-            transform: "translateY(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            zIndex: 50,
-          }}
-        >
+            <div style={{ marginTop: "auto", paddingTop: 24 }}>
+              <div className="section-label">Let’s start creating together</div>
+              <p style={{ margin: "10px 0 0", maxWidth: 420, lineHeight: 1.7, opacity: 0.72 }}>
+                A clean 3D ice cream showcase with smooth snap scroll, designed to feel like a premium brand site.
+              </p>
+            </div>
+          </div>
+
+          <div className="ice-right">
+            <div className="stage" ref={stageRef}>
+              {FLAVORS.map((flavor, i) => (
+                <div key={flavor.id} className={`hero-card hero-card-${i}`}>
+                  <div className="card-shell">
+                    <div className="glow" style={{ background: flavor.accent }} />
+                    <div className={`float-pop`}>
+                      <Image
+                        src={flavor.pop}
+                        alt={flavor.title}
+                        fill
+                        priority={i === 0}
+                        className="object-contain object-center"
+                        style={{
+                          filter: "drop-shadow(0 26px 54px rgba(0,0,0,0.22))",
+                          transform: "translateZ(40px)",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={`splash-wrap hero-splash-${i}`}>
+                    <div className="float-splash">
+                      <Image
+                        src={flavor.splash}
+                        alt={`${flavor.title} splash`}
+                        fill
+                        className="object-cover object-bottom"
+                        style={{
+                          opacity: 1,
+                          objectPosition: "center bottom",
+                          filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.12))",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background:
+                        "radial-gradient(circle at 50% 40%, rgba(255,255,255,0.22), transparent 58%)",
+                      transform: "translateZ(10px)",
+                    }}
+                  />
+
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      pointerEvents: "none",
+                      transform: "translateZ(20px)",
+                    }}
+                  >
+                    {Array.from({ length: 6 }).map((_, p) => (
+                      <span
+                        key={p}
+                        className="float-particle"
+                        style={{
+                          position: "absolute",
+                          width: 8 + p * 2,
+                          height: 8 + p * 2,
+                          borderRadius: "50%",
+                          left: `${14 + p * 13}%`,
+                          top: `${16 + (p % 3) * 12}%`,
+                          background: "rgba(255,255,255,0.28)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="dot-stack">
           {FLAVORS.map((_, i) => (
-            <div
-              key={i}
-              className={`nav-dot nav-dot-${i}`}
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                border: "1.4px solid rgba(0,0,0,0.35)",
-                backgroundColor: i === 0 ? "rgba(0,0,0,0.58)" : "transparent",
-                transition: "background-color 0.25s ease",
-              }}
-            />
+            <div key={i} className={`dot dot-${i}`} />
           ))}
         </div>
 
-        <div
-          style={{
-            position: "absolute",
-            bottom: 28,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 60,
-          }}
-        >
-          <button
-            style={{
-              padding: "13px 34px",
-              borderRadius: 999,
-              border: "1.5px solid rgba(255,255,255,0.45)",
-              background: "rgba(255,255,255,0.18)",
-              backdropFilter: "blur(18px)",
-              WebkitBackdropFilter: "blur(18px)",
-              color: "#111",
-              fontFamily: "monospace",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.28em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              boxShadow:
-                "0 8px 28px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.55)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseEnter={(e) => {
-              const b = e.currentTarget as HTMLButtonElement;
-              b.style.transform = "translateY(-2px)";
-              b.style.background = "rgba(255,255,255,0.32)";
-            }}
-            onMouseLeave={(e) => {
-              const b = e.currentTarget as HTMLButtonElement;
-              b.style.transform = "translateY(0)";
-              b.style.background = "rgba(255,255,255,0.18)";
-            }}
-          >
-            Order Now
-          </button>
+        <div className="cta">
+          <button>Order Now</button>
         </div>
       </div>
     </>
   );
-              }
+    }

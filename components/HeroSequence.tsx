@@ -70,41 +70,75 @@ export default function HeroSequence() {
       gsap.set(bgRef.current, { backgroundColor: FLAVORS[0].bg });
 
       FLAVORS.forEach((_, i) => {
-        if (i === 0) {
-          gsap.set(`.hs-text-${i}`, { opacity: 1, y: 0 });
-          gsap.set(`.hs-pop-${i}`, { opacity: 1, y: 0, scale: 1, rotation: 0 });
-          gsap.set(`.hs-splash-${i}`, { opacity: 1, y: 0, scale: 1 });
-        } else {
-          gsap.set(`.hs-text-${i}`, { opacity: 0, y: 70 });
-          gsap.set(`.hs-pop-${i}`, { opacity: 0, y: 110, scale: 0.92, rotation: 8 });
-          gsap.set(`.hs-splash-${i}`, { opacity: 0, y: 40, scale: 0.97 });
-        }
+        const popSelector = `.hs-pop-${i}`;
+        const splashSelector = `.hs-splash-${i}`;
+        const textSelector = `.hs-text-${i}`;
+
+        gsap.set(popSelector, {
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 80,
+          x: i === 0 ? 0 : -10,
+          scale: i === 0 ? 1 : 0.7,
+          rotateX: i === 0 ? 0 : 18,
+          rotateZ: i === 0 ? 0 : -8,
+          transformPerspective: 1200,
+          transformOrigin: "50% 50%",
+        });
+
+        gsap.set(splashSelector, {
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 70,
+          scaleX: i === 0 ? 1 : 0.96,
+          scaleY: i === 0 ? 1 : 0.94,
+        });
+
+        gsap.set(textSelector, {
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 60,
+        });
       });
 
-      // Gentle ambient motion
       gsap.to(".hs-pop-float", {
-        y: -12,
-        rotation: 1.2,
-        duration: 3.2,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        stagger: 0.16,
-      });
-
-      gsap.to(".hs-splash-float", {
-        y: -6,
-        scale: 1.02,
+        y: -10,
+        rotation: 0.9,
         duration: 3.8,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut",
-        stagger: 0.16,
+        stagger: 0.15,
+      });
+
+      gsap.to(".hs-pop-float", {
+        scale: 1.01,
+        duration: 4.5,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        stagger: 0.15,
+      });
+
+      gsap.to(".hs-splash-float", {
+        y: -7,
+        scaleX: 1.02,
+        scaleY: 1.01,
+        duration: 4.2,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        stagger: 0.15,
+      });
+
+      gsap.to(".hs-sheen", {
+        xPercent: 240,
+        duration: 4.6,
+        repeat: -1,
+        ease: "none",
+        stagger: 0.2,
       });
 
       gsap.to(".hs-particle", {
         y: -8,
-        opacity: 0.95,
+        opacity: 0.9,
         duration: 2.8,
         yoyo: true,
         repeat: -1,
@@ -124,7 +158,7 @@ export default function HeroSequence() {
           bgRef.current,
           {
             backgroundColor: FLAVORS[index].bg,
-            duration: 0.95,
+            duration: 1,
             ease: "power2.inOut",
           },
           0
@@ -132,47 +166,109 @@ export default function HeroSequence() {
 
         tl.to(
           `.hs-text-${prev}`,
-          { opacity: 0, y: -28, duration: 0.35, ease: "power2.inOut" },
+          { opacity: 0, y: -24, duration: 0.35, ease: "power2.inOut" },
           0
         );
         tl.to(
           `.hs-pop-${prev}`,
-          { opacity: 0, y: -34, scale: 0.92, rotation: -6, duration: 0.35, ease: "power2.inOut" },
+          { opacity: 0, y: -34, scale: 0.9, rotateX: 14, rotateZ: -6, duration: 0.35, ease: "power2.inOut" },
           0
         );
         tl.to(
           `.hs-splash-${prev}`,
-          { opacity: 0, y: -16, scale: 0.96, duration: 0.3, ease: "power2.inOut" },
+          { opacity: 0, y: -16, scaleX: 0.96, scaleY: 0.94, duration: 0.3, ease: "power2.inOut" },
           0
         );
 
         tl.fromTo(
           `.hs-text-${index}`,
-          { opacity: 0, y: 56 },
-          { opacity: 1, y: 0, duration: 0.9, ease: "power4.out" },
-          0.15
+          { opacity: 0, y: 42 },
+          { opacity: 1, y: 0, duration: 0.85, ease: "power4.out" },
+          0.14
         );
 
-        // 3D-like entrance for the popsicle
-        tl.fromTo(
-          `.hs-pop-${index}`,
-          { opacity: 0, y: 110, scale: 0.88, rotation: 10, z: -80 },
-          { opacity: 1, y: 0, scale: 1, rotation: 0, z: 0, duration: 1.15, ease: "expo.out" },
-          0.08
-        );
-
-        // Stronger splash reveal for a commercial feel
         tl.fromTo(
           `.hs-splash-${index}`,
-          { opacity: 0, y: 52, scale: 0.96 },
-          { opacity: 1, y: 0, scale: 1, duration: 1, ease: "power3.out" },
-          0.2
+          {
+            opacity: 0,
+            y: 68,
+            scaleX: 0.94,
+            scaleY: 0.92,
+            filter: "blur(10px)",
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scaleX: 1,
+            scaleY: 1,
+            filter: "blur(0px)",
+            duration: 0.95,
+            ease: "power3.out",
+          },
+          0.22
         );
 
-        gsap.to(".nav-dot", { backgroundColor: "transparent", duration: 0.22 });
+        tl.fromTo(
+          `.hs-pop-${index}`,
+          {
+            opacity: 0,
+            y: 80,
+            x: -10,
+            scale: 0.7,
+            rotateX: 18,
+            rotateZ: -8,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            x: 0,
+            scale: 1,
+            rotateX: 0,
+            rotateZ: 0,
+            duration: 1.08,
+            ease: "power3.out",
+          },
+          0.28
+        );
+
+        tl.to(
+          `.hs-pop-${index}`,
+          { y: -3, duration: 0.16, ease: "power2.out" },
+          ">-0.06"
+        );
+        tl.to(
+          `.hs-pop-${index}`,
+          { y: 0, duration: 0.22, ease: "bounce.out" },
+          ">"
+        );
+
+        tl.to(
+          `.hs-splash-${index}`,
+          {
+            scaleX: 1.04,
+            scaleY: 0.98,
+            y: -4,
+            duration: 0.22,
+            ease: "power2.out",
+          },
+          0.42
+        );
+        tl.to(
+          `.hs-splash-${index}`,
+          {
+            scaleX: 1,
+            scaleY: 1,
+            y: 0,
+            duration: 0.4,
+            ease: "sine.out",
+          },
+          0.62
+        );
+
+        gsap.to(".nav-dot", { backgroundColor: "transparent", duration: 0.25 });
         gsap.to(`.nav-dot-${index}`, {
           backgroundColor: "rgba(0,0,0,0.58)",
-          duration: 0.22,
+          duration: 0.25,
         });
       }
 
@@ -248,6 +344,7 @@ export default function HeroSequence() {
           z-index: 5;
           pointer-events: none;
           will-change: transform, opacity;
+          overflow: hidden;
         }
 
         .ice-hero-float {
@@ -273,6 +370,21 @@ export default function HeroSequence() {
           background: rgba(255, 255, 255, 0.25);
           filter: blur(1px);
           opacity: 0.55;
+        }
+
+        .hs-sheen {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            110deg,
+            transparent 35%,
+            rgba(255, 255, 255, 0.62) 50%,
+            transparent 65%
+          );
+          mix-blend-mode: screen;
+          opacity: 0.35;
+          transform: translateX(-160%);
+          pointer-events: none;
         }
 
         @media (max-width: 768px) {
@@ -350,7 +462,7 @@ export default function HeroSequence() {
                   opacity: 0.72,
                 }}
               >
-                Ice Cream Store · {String(i + 1).padStart(2, "0")}
+                Ice Cream Store
               </p>
 
               <h1
@@ -389,18 +501,7 @@ export default function HeroSequence() {
 
             <div className={`hs-pop-${i} ice-hero-pop`}>
               <div className="hs-pop-float ice-hero-float">
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    inset: "8% 14%",
-                    borderRadius: "50%",
-                    filter: "blur(58px)",
-                    background: "rgba(255,255,255,0.24)",
-                    opacity: 0.9,
-                    zIndex: 0,
-                  }}
-                />
+                <div className="ice-glow" />
                 <Image
                   src={flavor.pop}
                   alt={flavor.title}
@@ -428,6 +529,7 @@ export default function HeroSequence() {
                     filter: "drop-shadow(0 14px 24px rgba(0,0,0,0.12))",
                   }}
                 />
+                <div className="hs-sheen" />
               </div>
             </div>
 
@@ -445,8 +547,10 @@ export default function HeroSequence() {
                   key={p}
                   className="hs-particle"
                   style={{
+                    position: "absolute",
                     width: 8 + p * 1.5,
                     height: 8 + p * 1.5,
+                    borderRadius: "50%",
                     left: `${10 + p * 11}%`,
                     top: `${16 + (p % 4) * 10}%`,
                   }}
@@ -482,49 +586,6 @@ export default function HeroSequence() {
               }}
             />
           ))}
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            bottom: 28,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 60,
-          }}
-        >
-          <button
-            style={{
-              padding: "13px 34px",
-              borderRadius: 999,
-              border: "1.5px solid rgba(255,255,255,0.45)",
-              background: "rgba(255,255,255,0.18)",
-              backdropFilter: "blur(18px)",
-              WebkitBackdropFilter: "blur(18px)",
-              color: "#111",
-              fontFamily: "monospace",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.28em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              boxShadow:
-                "0 8px 28px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.55)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseEnter={(e) => {
-              const b = e.currentTarget as HTMLButtonElement;
-              b.style.transform = "translateY(-2px)";
-              b.style.background = "rgba(255,255,255,0.32)";
-            }}
-            onMouseLeave={(e) => {
-              const b = e.currentTarget as HTMLButtonElement;
-              b.style.transform = "translateY(0)";
-              b.style.background = "rgba(255,255,255,0.18)";
-            }}
-          >
-            Order Now
-          </button>
         </div>
       </div>
     </>

@@ -129,7 +129,7 @@ export default function GlassFooter() {
             }}
           >
             <Image
-              src="/images/logo.jpg"
+              src="/images/logo.png"
               alt="Playful logo"
               fill
               className="object-cover"

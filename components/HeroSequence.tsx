@@ -20,7 +20,20 @@ export default function HeroSequence() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    // 1. Continuous 3D Floating "Love Motions" (Untouched! 💖)
+    // 1. Initial Load "Surya Masterpiece" Entrance Animation
+    const initTl = gsap.timeline();
+    
+    initTl.from(".flavor-group-0 h1", { 
+      opacity: 0, y: 100, duration: 1.5, ease: "power4.out" 
+    })
+    .from(".flavor-group-0 .pop-image", { 
+      yPercent: 50, rotationX: 45, rotationY: -30, opacity: 0, duration: 1.5, ease: "power3.out" 
+    }, "-=1.2")
+    .from(".flavor-group-0 .splash-image", { 
+      scale: 0.2, yPercent: 50, opacity: 0, duration: 1.5, ease: "back.out(1.5)" 
+    }, "-=1.2");
+
+    // 2. Continuous 3D Floating Motions
     gsap.to(".pop-image", {
       y: -25,
       rotationX: 10,
@@ -29,7 +42,6 @@ export default function HeroSequence() {
       yoyo: true,
       repeat: -1,
       ease: "sine.inOut",
-      stagger: 0.2
     });
 
     gsap.to(".splash-image", {
@@ -40,46 +52,41 @@ export default function HeroSequence() {
       yoyo: true,
       repeat: -1,
       ease: "sine.inOut",
-      stagger: 0.3
     });
 
-    // 2. Initial Setup
+    // 3. Setup Hidden States for upcoming flavors
     gsap.set(".shutter-bg:not(.shutter-bg-0)", { clipPath: "inset(0% 0% 0% 100%)" });
     gsap.set(".flavor-group:not(.flavor-group-0)", { autoAlpha: 0, xPercent: 30, rotationY: 15 });
 
-    // 3. The Ultimate "Perplexity-Style" Directional Snap Timeline
+    // 4. The Pro-Level Butter Timeline (Fixed the "Stuck" feeling)
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
         end: "+=300%", 
         pin: true,
-        scrub: 1.2, // The base layer of the "butter" 🧈
+        scrub: 0.5, // Dropped from 1.2. This removes the "stuck/lag" input feeling!
         snap: {
-          // THE MAGIC TRICK: This forces the scroll to land on exactly 1 flavor per flick!
           snapTo: "labelsDirectional", 
-          duration: { min: 0.8, max: 1.5 }, // Long, cinematic glide duration
-          delay: 0, // Instantly engages the moment you flick the wheel
-          ease: "expo.out" // Premium, ultra-smooth landing curve
+          duration: { min: 0.3, max: 0.6 }, // Much faster, snappier transition
+          delay: 0, // Zero delay to react to user input instantly
+          ease: "power2.inOut" 
         },
       },
     });
 
-    // Label 0 (Starting point)
     tl.addLabel("flavor0", 0);
 
-    // 4. Build the Transitions & Labels
+    // 5. Build the Transitions
     FLAVORS.forEach((_, i) => {
       if (i === 0) return; 
 
-      // Wipe background in from the right edge
       tl.to(`.shutter-bg-${i}`, { 
         clipPath: "inset(0% 0% 0% 0%)", 
         duration: 1, 
         ease: "power2.inOut" 
       }, i - 1);
 
-      // Old flavor swings OUT to the left in 3D
       tl.to(`.flavor-group-${i - 1}`, {
         xPercent: -30,
         opacity: 0,
@@ -88,7 +95,6 @@ export default function HeroSequence() {
         ease: "power2.inOut"
       }, i - 1);
 
-      // New flavor swings IN from the right in 3D
       tl.to(`.flavor-group-${i}`, {
         xPercent: 0,
         autoAlpha: 1,
@@ -97,7 +103,6 @@ export default function HeroSequence() {
         ease: "power2.inOut"
       }, i - 1);
 
-      // Plant a label exactly at the end of this transition for the Snap to find!
       tl.addLabel(`flavor${i}`, i); 
     });
 
@@ -106,8 +111,8 @@ export default function HeroSequence() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-screen overflow-hidden"
-      style={{ perspective: "1200px" }} // Critical for the 3D depth!
+      className="relative w-full h-screen overflow-hidden bg-black"
+      style={{ perspective: "1200px" }} 
     >
       
       {/* ── BACKGROUND SHUTTERS ── */}
@@ -129,7 +134,7 @@ export default function HeroSequence() {
           style={{ transformStyle: "preserve-3d" }} 
         >
           
-          {/* Typography: Low to High Opacity Gradient */}
+          {/* Typography */}
           <div className="absolute top-[8%] md:top-[10%] w-full flex justify-center z-10 pointer-events-none">
             <h1 
               className="text-[15vw] font-black tracking-tighter uppercase"
@@ -144,7 +149,7 @@ export default function HeroSequence() {
             </h1>
           </div>
 
-          {/* Popsicle with separated 3D Float layer */}
+          {/* Popsicle */}
           <div className="absolute top-[12%] z-30 w-full flex items-center justify-center pointer-events-none">
             <div className="pop-image relative w-[280px] h-[550px] md:w-[380px] md:h-[750px]" style={{ filter: "drop-shadow(0 30px 40px rgba(0,0,0,0.35))" }}>
               <Image 
@@ -157,7 +162,7 @@ export default function HeroSequence() {
             </div>
           </div>
 
-          {/* Splash with separated 3D Float layer */}
+          {/* Splash */}
           <div className="absolute bottom-0 z-20 w-full h-[40vh] md:h-[45vh] pointer-events-none flex items-end justify-center">
             <div className="splash-image relative w-full h-full">
               <Image 
@@ -173,11 +178,11 @@ export default function HeroSequence() {
         </div>
       ))}
 
-      {/* ── GLOBAL UI BUTTON ── */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50">
-        <button className="px-10 py-4 bg-white/10 backdrop-blur-xl border border-white/20 text-white text-sm tracking-[0.2em] font-bold rounded-full hover:bg-white hover:text-black hover:scale-105 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-          ORDER NOW
-        </button>
+      {/* ── SURYA PRO WATERMARK ── */}
+      <div className="absolute bottom-6 right-8 z-50 pointer-events-none opacity-60">
+        <p className="font-mono text-[10px] tracking-[0.3em] text-white uppercase mix-blend-difference">
+          3D Experience by Surya
+        </p>
       </div>
 
     </div>

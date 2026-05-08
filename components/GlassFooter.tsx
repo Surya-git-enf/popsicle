@@ -93,7 +93,7 @@ export default function GlassFooter() {
           position:        "absolute",
           inset:           0,
           zIndex:          1,
-          backgroundColor: "rgba(0,0,0,0.52)",
+          backgroundColor: "rgba(0,0,0,0.22)",
           backdropFilter:  "blur(2px)",
         }}
       />

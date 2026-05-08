@@ -20,8 +20,7 @@ export default function HeroSequence() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    // 1. Continuous 3D Floating "Love Motions"
-    // The perspective CSS on the container allows rotationX and rotationY to actually pop out at the user
+    // 1. Continuous 3D Floating "Love Motions" (Untouched! 💖)
     gsap.to(".pop-image", {
       y: -25,
       rotationX: 10,
@@ -36,7 +35,7 @@ export default function HeroSequence() {
     gsap.to(".splash-image", {
       y: 15,
       scale: 1.05,
-      rotationX: -10, // Tilts the splash backward slightly for a deep 3D puddle effect
+      rotationX: -10, 
       duration: 4,
       yoyo: true,
       repeat: -1,
@@ -45,56 +44,61 @@ export default function HeroSequence() {
     });
 
     // 2. Initial Setup
-    // Set all backgrounds (except the first) to be hidden off to the right side via clip-path
     gsap.set(".shutter-bg:not(.shutter-bg-0)", { clipPath: "inset(0% 0% 0% 100%)" });
-    // Hide all flavors (except the first)
     gsap.set(".flavor-group:not(.flavor-group-0)", { autoAlpha: 0, xPercent: 30, rotationY: 15 });
 
-    // 3. The Butter-Smooth Perplexity Timeline
+    // 3. The Ultimate "Perplexity-Style" Directional Snap Timeline
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
-        end: "+=300%", // 3 full scrolls to see all 4 flavors
+        end: "+=300%", 
         pin: true,
-        scrub: 1.2, // This adds the "butter" drag effect
+        scrub: 1.2, // The base layer of the "butter" 🧈
         snap: {
-          snapTo: 1 / (FLAVORS.length - 1), // Locks perfectly into exactly one flavor
-          duration: { min: 0.4, max: 0.8 },
-          ease: "power2.inOut", // Soft, premium landing when the snap finishes
+          // THE MAGIC TRICK: This forces the scroll to land on exactly 1 flavor per flick!
+          snapTo: "labelsDirectional", 
+          duration: { min: 0.8, max: 1.5 }, // Long, cinematic glide duration
+          delay: 0, // Instantly engages the moment you flick the wheel
+          ease: "expo.out" // Premium, ultra-smooth landing curve
         },
       },
     });
 
-    // 4. Build the Transitions
-    FLAVORS.forEach((_, i) => {
-      if (i === 0) return; // Skip the first one since it's already on screen
+    // Label 0 (Starting point)
+    tl.addLabel("flavor0", 0);
 
-      // A. The Side Shutter Wipe
-      // Wipes from the right edge (100%) to fully visible (0%)
+    // 4. Build the Transitions & Labels
+    FLAVORS.forEach((_, i) => {
+      if (i === 0) return; 
+
+      // Wipe background in from the right edge
       tl.to(`.shutter-bg-${i}`, { 
         clipPath: "inset(0% 0% 0% 0%)", 
         duration: 1, 
-        ease: "none" 
+        ease: "power2.inOut" 
       }, i - 1);
 
-      // B. Old Flavor Swings OUT to the left in 3D
+      // Old flavor swings OUT to the left in 3D
       tl.to(`.flavor-group-${i - 1}`, {
         xPercent: -30,
         opacity: 0,
         rotationY: -15,
         duration: 1,
-        ease: "power1.inOut"
+        ease: "power2.inOut"
       }, i - 1);
 
-      // C. New Flavor Swings IN from the right in 3D
+      // New flavor swings IN from the right in 3D
       tl.to(`.flavor-group-${i}`, {
         xPercent: 0,
         autoAlpha: 1,
         rotationY: 0,
         duration: 1,
-        ease: "power1.inOut"
+        ease: "power2.inOut"
       }, i - 1);
+
+      // Plant a label exactly at the end of this transition for the Snap to find!
+      tl.addLabel(`flavor${i}`, i); 
     });
 
   }, { scope: containerRef });
@@ -103,7 +107,7 @@ export default function HeroSequence() {
     <div
       ref={containerRef}
       className="relative w-full h-screen overflow-hidden"
-      style={{ perspective: "1200px" }} // Critical for the 3D swing and float effects
+      style={{ perspective: "1200px" }} // Critical for the 3D depth!
     >
       
       {/* ── BACKGROUND SHUTTERS ── */}
@@ -122,7 +126,7 @@ export default function HeroSequence() {
         <div 
           key={`group-${flavor.id}`} 
           className={`flavor-group flavor-group-${i} absolute inset-0 z-10 flex flex-col items-center justify-center`}
-          style={{ transformStyle: "preserve-3d" }} // Ensures children maintain 3D depth
+          style={{ transformStyle: "preserve-3d" }} 
         >
           
           {/* Typography: Low to High Opacity Gradient */}

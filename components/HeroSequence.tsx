@@ -1,744 +1,637 @@
 
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import gsap from "gsap";
+import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Flavor = {
+// ─────────────────────────────────────────────────────────────────────────────
+// FLAVOR DATA
+// ─────────────────────────────────────────────────────────────────────────────
+interface Flavor {
   id: string;
   title: string;
   subtitle: string;
+  popImage: string;
+  splashImage: string;
   bg: string;
-  textHex: string;
-  pop: string;
-  splash: string;
-};
+  titleColor: string;
+  subtitleColor: string;
+}
 
 const FLAVORS: Flavor[] = [
   {
     id: "chocolate",
     title: "CHOCOLATE",
-    subtitle: "Rich · Smooth · Bold",
-    bg: "#F2C94C",
-    textHex: "#4A2311",
-    pop: "/images/chocolate-pop.png",
-    splash: "/images/chocolate-splash.png",
+    subtitle: "dark · roasted · indulgent",
+    popImage: "/images/chocolate-pop.png",
+    splashImage: "/images/chocolate-splash.png",
+    bg: "#2C1A0E",
+    titleColor: "#F5DEB3",
+    subtitleColor: "#C4A882",
   },
   {
     id: "strawberry",
     title: "STRAWBERRY",
-    subtitle: "Fresh · Sweet · Bright",
-    bg: "#00FFFF",
-    textHex: "#E91E63",
-    pop: "/images/strawberry-pop.png",
-    splash: "/images/strawberry-splash.png",
+    subtitle: "ripe · bright · sun-kissed",
+    popImage: "/images/strawberry-pop.png",
+    splashImage: "/images/strawberry-splash.png",
+    bg: "#3D0B1A",
+    titleColor: "#FFD6E0",
+    subtitleColor: "#F0A0B5",
   },
   {
     id: "vanilla",
     title: "VANILLA",
-    subtitle: "Soft · Creamy · Classic",
-    bg: "#3E2723",
-    textHex: "#FFF3E0",
-    pop: "/images/vanilla-pop.png",
-    splash: "/images/vanilla-splash.png",
+    subtitle: "soft · creamy · timeless",
+    popImage: "/images/vanilla-pop.png",
+    splashImage: "/images/vanilla-splash.png",
+    bg: "#2A2014",
+    titleColor: "#FFF8EC",
+    subtitleColor: "#D4C4A0",
   },
   {
     id: "pistachio",
     title: "PISTACHIO",
-    subtitle: "Nutty · Fresh · Smooth",
-    bg: "#A5D6A7",
-    textHex: "#1B5E20",
-    pop: "/images/pistachio-pop.png",
-    splash: "/images/pistachio-splash.png",
+    subtitle: "earthy · aromatic · rare",
+    popImage: "/images/pistachio-pop.png",
+    splashImage: "/images/pistachio-splash.png",
+    bg: "#0D1E14",
+    titleColor: "#D4EAD8",
+    subtitleColor: "#9DC4A8",
   },
 ];
 
-export default function HeroSequence() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
-  const activeRef = useRef(0);
+const TOTAL = FLAVORS.length;
 
-  useGSAP(
-    () => {
-      const total = FLAVORS.length - 1;
+// ─────────────────────────────────────────────────────────────────────────────
+// ANIMATION HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
 
-      gsap.set(bgRef.current, { backgroundColor: FLAVORS[0].bg });
+/**
+ * Instantly reset a flavor to its hidden/entry state.
+ * Called before we reveal a different flavor.
+ */
+function hideFlavor(
+  pop: HTMLDivElement,
+  splash: HTMLDivElement,
+  title: HTMLDivElement,
+  sub: HTMLDivElement,
+  layer: HTMLDivElement,
+  floatTween: gsap.core.Tween
+) {
+  floatTween.pause();
+  gsap.killTweensOf([pop, splash, title, sub]);
 
-      FLAVORS.forEach((_, i) => {
-        gsap.set(`.hs-text-${i}`, {
-          opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 42,
-        });
+  // Collapse layer so it doesn't sit on top
+  gsap.set(layer, { autoAlpha: 0 });
 
-        gsap.set(`.hs-pop-${i}`, {
-          opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 80,
-          x: i === 0 ? 0 : -10,
-          scale: i === 0 ? 1 : 0.7,
-          rotateX: i === 0 ? 0 : 18,
-          rotateZ: i === 0 ? 0 : -8,
-          transformPerspective: 1400,
-          transformOrigin: "50% 50%",
-        });
+  // Reset to entry state — ready to animate IN again if scrolled back
+  gsap.set(pop, {
+    scale: 0.68,
+    y: 90,
+    x: -12,
+    rotateX: 18,
+    rotateZ: -8,
+    opacity: 0,
+  });
+  gsap.set(splash, {
+    scale: 0.82,
+    scaleX: 0.72,
+    y: 35,
+    opacity: 0,
+    filter: "blur(5px)",
+  });
+  gsap.set([title, sub], { opacity: 0, y: 14 });
+}
 
-        gsap.set(`.hs-splash-${i}`, {
-          opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 72,
-          scaleX: i === 0 ? 1 : 0.95,
-          scaleY: i === 0 ? 1 : 0.94,
-        });
+/**
+ * Animate a flavor fully into view.
+ * Each element reveals sequentially — pop leads, splash follows, text arrives last.
+ */
+function revealFlavor(
+  pop: HTMLDivElement,
+  splash: HTMLDivElement,
+  title: HTMLDivElement,
+  sub: HTMLDivElement,
+  layer: HTMLDivElement,
+  bg: HTMLDivElement,
+  bgColor: string,
+  floatTween: gsap.core.Tween
+) {
+  // Make this layer visible
+  gsap.set(layer, { autoAlpha: 1 });
 
-        gsap.set(`.hs-wave-${i}`, {
-          opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 80,
-          scaleX: i === 0 ? 1 : 0.92,
-          scaleY: i === 0 ? 1 : 0.9,
-        });
+  // Swap background color — fast but smooth
+  gsap.to(bg, { backgroundColor: bgColor, duration: 0.35, ease: "power2.out" });
 
-        gsap.set(`.hs-shadow-${i}`, {
-          opacity: i === 0 ? 0.2 : 0,
-          scale: i === 0 ? 1 : 0.82,
-          y: i === 0 ? 0 : 24,
-        });
-      });
+  const tl = gsap.timeline({
+    onComplete: () => floatTween.play(), // gentle idle float starts after reveal
+  });
 
-      gsap.to(".hs-pop-float", {
-        y: -12,
-        x: 6,
-        rotation: 1.1,
-        duration: 3.8,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        stagger: 0.14,
-      });
-
-      gsap.to(".hs-splash-float", {
-        y: -8,
-        scaleX: 1.02,
-        scaleY: 1.01,
-        duration: 4.4,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        stagger: 0.14,
-      });
-
-      gsap.to(".hs-wave-float", {
-        y: -6,
-        scaleX: 1.02,
-        scaleY: 1.01,
-        duration: 4.8,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        stagger: 0.14,
-      });
-
-      gsap.to(".hs-sheen", {
-        xPercent: 260,
-        duration: 4.8,
-        repeat: -1,
-        ease: "none",
-        stagger: 0.15,
-      });
-
-      gsap.to(".hs-particle", {
-        y: -8,
-        opacity: 0.9,
-        duration: 2.8,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        stagger: 0.08,
-      });
-
-      function animateIn(index: number) {
-        if (activeRef.current === index) return;
-
-        const prev = activeRef.current;
-        activeRef.current = index;
-
-        const tl = gsap.timeline({ defaults: { overwrite: "auto" } });
-
-        tl.to(
-          bgRef.current,
-          {
-            backgroundColor: FLAVORS[index].bg,
-            duration: 0.9,
-            ease: "power2.inOut",
-          },
-          0
-        );
-
-        tl.to(
-          `.hs-text-${prev}`,
-          { opacity: 0, y: -18, duration: 0.24, ease: "power2.out" },
-          0
-        );
-        tl.to(
-          `.hs-pop-${prev}`,
-          { opacity: 0, y: -24, scale: 0.9, rotateX: 14, rotateZ: -6, duration: 0.24, ease: "power2.out" },
-          0
-        );
-        tl.to(
-          `.hs-splash-${prev}`,
-          { opacity: 0, y: -12, scaleX: 0.96, scaleY: 0.94, duration: 0.22, ease: "power2.out" },
-          0
-        );
-        tl.to(
-          `.hs-wave-${prev}`,
-          { opacity: 0, y: -14, scaleX: 0.96, scaleY: 0.94, duration: 0.22, ease: "power2.out" },
-          0
-        );
-
-        tl.fromTo(
-          `.hs-text-${index}`,
-          { opacity: 0, y: 28 },
-          { opacity: 1, y: 0, duration: 0.52, ease: "power4.out" },
-          0.08
-        );
-
-        tl.fromTo(
-          `.hs-wave-${index}`,
-          {
-            opacity: 0,
-            y: 92,
-            scaleX: 0.9,
-            scaleY: 0.88,
-            filter: "blur(12px)",
-          },
-          {
-            opacity: 1,
-            y: 0,
-            scaleX: 1,
-            scaleY: 1,
-            filter: "blur(0px)",
-            duration: 0.72,
-            ease: "expo.out",
-          },
-          0.12
-        );
-
-        tl.fromTo(
-          `.hs-splash-${index}`,
-          {
-            opacity: 0,
-            y: 78,
-            scaleX: 0.94,
-            scaleY: 0.92,
-            filter: "blur(10px)",
-          },
-          {
-            opacity: 1,
-            y: 0,
-            scaleX: 1,
-            scaleY: 1,
-            filter: "blur(0px)",
-            duration: 0.75,
-            ease: "expo.out",
-          },
-          0.16
-        );
-
-        tl.fromTo(
-          `.hs-shadow-${index}`,
-          { opacity: 0, y: 28, scale: 0.82 },
-          { opacity: 0.24, y: 0, scale: 1, duration: 0.5, ease: "power2.out" },
-          0.24
-        );
-
-        tl.fromTo(
-          `.hs-pop-${index}`,
-          {
-            opacity: 0,
-            y: 80,
-            x: -10,
-            scale: 0.7,
-            rotateX: 18,
-            rotateZ: -8,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            x: 0,
-            scale: 1,
-            rotateX: 0,
-            rotateZ: 0,
-            duration: 0.92,
-            ease: "power3.out",
-          },
-          0.2
-        );
-
-        tl.to(
-          `.hs-pop-${index}`,
-          { y: -4, duration: 0.14, ease: "power2.out" },
-          ">-0.02"
-        );
-
-        tl.to(
-          `.hs-pop-${index}`,
-          { y: 0, duration: 0.24, ease: "bounce.out" },
-          ">"
-        );
-
-        tl.to(
-          `.hs-wave-${index}`,
-          {
-            scaleX: 1.04,
-            scaleY: 0.96,
-            y: -4,
-            duration: 0.16,
-            ease: "power2.out",
-          },
-          0.48
-        );
-
-        tl.to(
-          `.hs-wave-${index}`,
-          {
-            scaleX: 1,
-            scaleY: 1,
-            y: 0,
-            duration: 0.34,
-            ease: "elastic.out(1, 0.55)",
-          },
-          0.62
-        );
-      }
-
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: "top top",
-        end: `+=${total * 110}%`,
-        pin: true,
-        scrub: 0.8,
-        anticipatePin: 1,
-        fastScrollEnd: true,
-        invalidateOnRefresh: true,
-        snap: {
-          snapTo: 1 / total,
-          duration: { min: 0.22, max: 0.48 },
-          delay: 0,
-          ease: "power2.inOut",
-        },
-        onUpdate: (self) => {
-          const index = Math.round(self.progress * total);
-          animateIn(index);
-        },
-      });
-    },
-    { scope: containerRef }
+  // Popsicle emerges from below with 3D tilt
+  tl.fromTo(
+    pop,
+    { scale: 0.68, y: 90, x: -12, rotateX: 18, rotateZ: -8, opacity: 0 },
+    {
+      scale: 1,
+      y: 0,
+      x: 0,
+      rotateX: 0,
+      rotateZ: 0,
+      opacity: 1,
+      duration: 0.75,
+      ease: "back.out(1.6)",
+    }
   );
 
+  // Splash rises up behind popsicle
+  tl.fromTo(
+    splash,
+    { scale: 0.82, scaleX: 0.72, y: 35, opacity: 0, filter: "blur(5px)" },
+    {
+      scale: 1,
+      scaleX: 1,
+      y: 0,
+      opacity: 1,
+      filter: "blur(0px)",
+      duration: 0.6,
+      ease: "power3.out",
+    },
+    "-=0.52"
+  );
+
+  // Title fades up
+  tl.fromTo(
+    title,
+    { opacity: 0, y: 14 },
+    { opacity: 1, y: 0, duration: 0.38, ease: "power2.out" },
+    "-=0.32"
+  );
+
+  // Subtitle follows
+  tl.fromTo(
+    sub,
+    { opacity: 0, y: 10 },
+    { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" },
+    "-=0.22"
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+export default function IceCreamHero() {
+  const wrapRef    = useRef<HTMLDivElement>(null);  // full-height scroll container
+  const pinnedRef  = useRef<HTMLDivElement>(null);  // pinned 100vh viewport
+  const bgRef      = useRef<HTMLDivElement>(null);  // background color div
+
+  const layerRefs  = useRef<(HTMLDivElement | null)[]>([]);
+  const popRefs    = useRef<(HTMLDivElement | null)[]>([]);
+  const splashRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const titleRefs  = useRef<(HTMLDivElement | null)[]>([]);
+  const subRefs    = useRef<(HTMLDivElement | null)[]>([]);
+
+  // One float tween per flavor — paused by default, played after reveal
+  const floatTweens = useRef<gsap.core.Tween[]>([]);
+
+  const [active, setActive] = useState(0);
+
+  useGSAP(() => {
+    const wrap   = wrapRef.current;
+    const pinned = pinnedRef.current;
+    const bg     = bgRef.current;
+    if (!wrap || !pinned || !bg) return;
+
+    // ── STEP 1: SET ALL FLAVORS TO HIDDEN/ENTRY STATE ────────────────────
+    FLAVORS.forEach((_, i) => {
+      const layer  = layerRefs.current[i];
+      const pop    = popRefs.current[i];
+      const splash = splashRefs.current[i];
+      const title  = titleRefs.current[i];
+      const sub    = subRefs.current[i];
+      if (!layer || !pop || !splash || !title || !sub) return;
+
+      gsap.set(layer, { autoAlpha: 0 });
+
+      gsap.set(pop, {
+        scale: 0.68,
+        y: 90,
+        x: -12,
+        rotateX: 18,
+        rotateZ: -8,
+        opacity: 0,
+        transformOrigin: "center bottom",
+        transformPerspective: 900,
+      });
+
+      gsap.set(splash, {
+        scale: 0.82,
+        scaleX: 0.72,
+        y: 35,
+        opacity: 0,
+        filter: "blur(5px)",
+        transformOrigin: "center bottom",
+      });
+
+      gsap.set([title, sub], { opacity: 0, y: 14 });
+
+      // Create a looping float tween, paused — GSAP won't run it until .play()
+      floatTweens.current[i] = gsap.to(pop, {
+        y: "-=12",
+        duration: 2.4,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        paused: true,
+      });
+    });
+
+    // ── STEP 2: SET BACKGROUND AND REVEAL FLAVOR 0 IMMEDIATELY ──────────
+    gsap.set(bg, { backgroundColor: FLAVORS[0].bg });
+
+    revealFlavor(
+      popRefs.current[0]!,
+      splashRefs.current[0]!,
+      titleRefs.current[0]!,
+      subRefs.current[0]!,
+      layerRefs.current[0]!,
+      bg,
+      FLAVORS[0].bg,
+      floatTweens.current[0]
+    );
+
+    // ── STEP 3: PIN THE VIEWPORT ─────────────────────────────────────────
+    // The wrapper is TOTAL×100vh. The inner 100vh pinner gets pinned.
+    // While pinned, scroll position drives which flavor is active.
+    ScrollTrigger.create({
+      trigger: wrap,
+      start: "top top",
+      end: `+=${window.innerHeight * (TOTAL - 1)}`,
+      pin: pinned,
+      pinSpacing: true,
+      anticipatePin: 1,
+    });
+
+    // ── STEP 4: SNAP ─────────────────────────────────────────────────────
+    // A separate ScrollTrigger just for snapping.
+    // snapTo: 1/(TOTAL-1) creates equally-spaced snap points.
+    ScrollTrigger.create({
+      trigger: wrap,
+      start: "top top",
+      end: `+=${window.innerHeight * (TOTAL - 1)}`,
+      snap: {
+        snapTo: 1 / (TOTAL - 1),
+        duration: { min: 0.25, max: 0.55 },
+        delay: 0.04,
+        ease: "power2.inOut",
+      },
+    });
+
+    // ── STEP 5: PER-FLAVOR DISCRETE TRIGGERS ─────────────────────────────
+    // Each flavor owns a scroll zone: flavor i → [i×vh, (i+1)×vh].
+    // We switch at the midpoint of each zone so the swap feels decisive.
+    //
+    // onEnter      = scrolling DOWN into flavor i
+    // onEnterBack  = scrolling UP back into flavor i
+    // Both call the same reveal — one flavor fully shown at a time.
+    FLAVORS.forEach((flavor, i) => {
+      const layer  = layerRefs.current[i];
+      const pop    = popRefs.current[i];
+      const splash = splashRefs.current[i];
+      const title  = titleRefs.current[i];
+      const sub    = subRefs.current[i];
+      if (!layer || !pop || !splash || !title || !sub) return;
+
+      const ft = floatTweens.current[i];
+      const vh = window.innerHeight;
+
+      // Trigger point: midway through this flavor's scroll zone.
+      // Flavor 0 triggers at 0 (start) since it's already revealed on mount.
+      const triggerStart = i === 0
+        ? `top+=${0} top`
+        : `top+=${vh * i - vh * 0.5} top`;
+
+      const switchFlavor = () => {
+        if (active === i) return; // already this flavor — skip
+        setActive(i);
+
+        // Hide every OTHER flavor instantly
+        FLAVORS.forEach((_, j) => {
+          if (j === i) return;
+          const l = layerRefs.current[j];
+          const p = popRefs.current[j];
+          const s = splashRefs.current[j];
+          const t = titleRefs.current[j];
+          const u = subRefs.current[j];
+          if (l && p && s && t && u) {
+            hideFlavor(p, s, t, u, l, floatTweens.current[j]);
+          }
+        });
+
+        // Reveal this flavor
+        revealFlavor(pop, splash, title, sub, layer, bg, flavor.bg, ft);
+      };
+
+      ScrollTrigger.create({
+        trigger: wrap,
+        start: triggerStart,
+        // End doesn't matter for onEnter/onEnterBack — we use start crossing
+        end: `top+=${vh * TOTAL} top`,
+        onEnter: switchFlavor,
+        onEnterBack: switchFlavor,
+      });
+    });
+
+  }, { scope: wrapRef });
+
+  // ── DOT CLICK NAV ────────────────────────────────────────────────────────
+  const scrollToFlavor = (i: number) => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const wrapTop = wrap.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: wrapTop + window.innerHeight * i, behavior: "smooth" });
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // JSX
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
-      <style jsx global>{`
-        .ice-hero-shell {
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Space+Mono&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .ih-wrap {
+          position: relative;
+          width: 100%;
+        }
+
+        .ih-pinned {
           position: relative;
           width: 100%;
           height: 100vh;
           overflow: hidden;
-          touch-action: pan-y;
-          -webkit-tap-highlight-color: transparent;
-          perspective: 1500px;
-          transform-style: preserve-3d;
         }
 
-        .ice-hero-text {
+        /* ── Background ── */
+        .ih-bg {
           position: absolute;
-          top: 7%;
-          left: 0;
-          right: 0;
+          inset: 0;
+          z-index: 0;
+        }
+        .ih-bg::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(ellipse 70% 55% at 50% 65%,
+            rgba(255,255,255,0.05) 0%, transparent 70%);
+          pointer-events: none;
+        }
+
+        /* ── Film grain ── */
+        .ih-grain {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          opacity: 0.04;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+          background-size: 160px 160px;
+          mix-blend-mode: overlay;
+        }
+
+        /* ── Vignette ── */
+        .ih-vignette {
+          position: absolute;
+          inset: 0;
+          z-index: 2;
+          pointer-events: none;
+          background:
+            radial-gradient(ellipse 110% 45% at 50% 100%, rgba(0,0,0,0.5) 0%, transparent 65%),
+            radial-gradient(ellipse 120% 25% at 50% 0%,   rgba(0,0,0,0.2) 0%, transparent 55%);
+        }
+
+        /* ── Flavor layer ── */
+        .ih-layer {
+          position: absolute;
+          inset: 0;
+          z-index: 3;
           display: flex;
           flex-direction: column;
           align-items: center;
-          z-index: 10;
-          pointer-events: none;
-          will-change: transform, opacity;
         }
 
-        .ice-hero-pop {
+        /* ── Title ── */
+        .ih-title {
+          font-family: 'Cormorant Garamond', serif;
+          font-weight: 300;
+          font-size: clamp(2.8rem, 8.5vw, 7.5rem);
+          letter-spacing: 0.28em;
+          text-transform: uppercase;
+          line-height: 1;
+          margin-top: clamp(28px, 6vh, 56px);
+          text-align: center;
+          padding: 0 1.5rem;
+          will-change: opacity, transform;
+        }
+
+        /* ── Subtitle ── */
+        .ih-sub {
+          font-family: 'Space Mono', monospace;
+          font-size: clamp(0.5rem, 1vw, 0.72rem);
+          letter-spacing: 0.36em;
+          text-transform: lowercase;
+          margin-top: 10px;
+          text-align: center;
+          will-change: opacity, transform;
+        }
+
+        /* ── Popsicle ── */
+        .ih-pop {
           position: absolute;
           left: 50%;
           top: 50%;
-          transform: translateX(-50%);
-          z-index: 30;
-          width: min(82vw, 580px);
-          height: min(76vh, 780px);
+          translate: -50% -54%;
+          width: clamp(160px, 22vw, 320px);
+          z-index: 10;
           will-change: transform, opacity;
-          transform-style: preserve-3d;
+          perspective: 900px;
         }
-
-        .ice-hero-splash {
-          position: absolute;
-          left: 50%;
-          bottom: -2%;
-          width: 112%;
-          height: 40vh;
-          transform: translateX(-50%);
-          z-index: 15;
-          pointer-events: none;
-          will-change: transform, opacity;
-          overflow: visible;
-        }
-
-        .ice-hero-wave {
-          position: absolute;
-          left: 50%;
-          bottom: 4%;
-          width: min(110vw, 980px);
-          height: 34vh;
-          transform: translateX(-50%);
-          z-index: 14;
-          pointer-events: none;
-          will-change: transform, opacity;
-          overflow: visible;
-        }
-
-        .ice-hero-shadow {
-          position: absolute;
-          left: 50%;
-          bottom: 18%;
-          width: min(48vw, 360px);
-          height: 72px;
-          transform: translateX(-50%);
-          border-radius: 50%;
-          background: radial-gradient(
-            ellipse at center,
-            rgba(0, 0, 0, 0.28) 0%,
-            rgba(0, 0, 0, 0.16) 30%,
-            rgba(0, 0, 0, 0.08) 56%,
-            transparent 72%
-          );
-          filter: blur(18px);
-          z-index: 18;
-          pointer-events: none;
-          will-change: transform, opacity;
-        }
-
-        .ice-hero-float {
-          position: relative;
+        .ih-pop img {
           width: 100%;
+          height: auto;
+          display: block;
+          filter:
+            drop-shadow(0 28px 52px rgba(0,0,0,0.6))
+            drop-shadow(0 8px 18px rgba(0,0,0,0.35));
+        }
+
+        /* ── Splash ── */
+        .ih-splash {
+          position: absolute;
+          bottom: -2px;
+          left: 50%;
+          translate: -50% 0;
+          width: clamp(260px, 68vw, 800px);
+          z-index: 8;
+          will-change: transform, opacity, filter;
+          transform-origin: center bottom;
+        }
+        .ih-splash img {
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+        /* Gloss sweep */
+        .ih-splash::after {
+          content: '';
+          position: absolute;
+          top: 0; left: -40%;
+          width: 28%;
           height: 100%;
-          transform-style: preserve-3d;
-        }
-
-        .ice-glow {
-          position: absolute;
-          inset: 12% 18%;
-          border-radius: 50%;
-          filter: blur(64px);
-          background: rgba(255, 255, 255, 0.24);
-          opacity: 0.8;
-          z-index: 0;
-        }
-
-        .ice-particle {
-          position: absolute;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.25);
-          filter: blur(1px);
-          opacity: 0.55;
-        }
-
-        .hs-sheen {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            110deg,
-            transparent 35%,
-            rgba(255, 255, 255, 0.62) 50%,
-            transparent 65%
-          );
-          mix-blend-mode: screen;
-          opacity: 0.35;
-          transform: translateX(-160%);
+          background: linear-gradient(108deg,
+            transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+          animation: glossSweep 5s ease-in-out infinite;
           pointer-events: none;
         }
-
-        @media (max-width: 768px) {
-          .ice-hero-text {
-            top: 6%;
-          }
-
-          .ice-hero-pop {
-            top: 52%;
-            width: min(92vw, 430px);
-            height: min(60vh, 560px);
-          }
-
-          .ice-hero-splash {
-            width: 118%;
-            height: 32vh;
-            bottom: 0;
-          }
-
-          .ice-hero-wave {
-            width: 100vw;
-            height: 24vh;
-            bottom: 6%;
-          }
-
-          .ice-hero-shadow {
-            width: 60vw;
-            bottom: 19%;
-          }
+        @keyframes glossSweep {
+          0%   { left: -40%; opacity: 0; }
+          15%  { opacity: 1; }
+          85%  { opacity: 1; }
+          100% { left: 110%; opacity: 0; }
         }
 
-        @media (max-width: 420px) {
-          .ice-hero-pop {
-            top: 53%;
-            width: 92vw;
-            height: 56vh;
-          }
+        /* ── Nav dots ── */
+        .ih-dots {
+          position: absolute;
+          right: clamp(14px, 2.5vw, 32px);
+          top: 50%;
+          translate: 0 -50%;
+          z-index: 20;
+          display: flex;
+          flex-direction: column;
+          gap: 11px;
+        }
+        .ih-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.22);
+          border: 1px solid rgba(255,255,255,0.12);
+          cursor: pointer;
+          transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+        .ih-dot.active {
+          transform: scale(1.65);
+          background: rgba(255,255,255,0.92);
+          border-color: rgba(255,255,255,0.5);
+          box-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
 
-          .ice-hero-splash {
-            height: 28vh;
-          }
-
-          .ice-hero-wave {
-            height: 22vh;
-          }
-
-          .ice-hero-shadow {
-            width: 66vw;
-            bottom: 20%;
-          }
+        /* ── Mobile ── */
+        @media (max-width: 600px) {
+          .ih-pop    { width: clamp(130px, 36vw, 200px); top: 47%; }
+          .ih-splash { width: 90vw; }
+          .ih-title  { letter-spacing: 0.16em; }
+          .ih-sub    { letter-spacing: 0.2em; font-size: 0.52rem; }
         }
       `}</style>
 
-      <div ref={containerRef} className="ice-hero-shell">
-        <div ref={bgRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+      {/* TOTAL × 100vh — gives scroll room while pinner is locked */}
+      <div
+        ref={wrapRef}
+        className="ih-wrap"
+        style={{ height: `${TOTAL * 100}vh` }}
+      >
+        {/* 100vh pinned viewport */}
+        <div ref={pinnedRef} className="ih-pinned">
 
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 1,
-            pointerEvents: "none",
-            background:
-              "radial-gradient(circle at center, rgba(255,255,255,0.18), transparent 58%), linear-gradient(to top, rgba(255,255,255,0.18), transparent 32%)",
-            mixBlendMode: "soft-light",
-          }}
-        />
+          {/* Background color layer */}
+          <div ref={bgRef} className="ih-bg" />
 
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 1,
-            pointerEvents: "none",
-            opacity: 0.18,
-            backgroundImage:
-              'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\' opacity=\'0.07\'/%3E%3C/svg%3E")',
-            backgroundSize: "300px 300px",
-            mixBlendMode: "overlay",
-          }}
-        />
+          {/* Film grain */}
+          <div className="ih-grain" />
 
-        {FLAVORS.map((flavor, i) => (
-          <section key={flavor.id} style={{ position: "absolute", inset: 0, zIndex: 2 }}>
-            <div className={`hs-text-${i} ice-hero-text`}>
-              <p
-                style={{
-                  margin: 0,
-                  fontFamily: "monospace",
-                  fontSize: 10,
-                  letterSpacing: "0.34em",
-                  textTransform: "uppercase",
-                  color: flavor.textHex,
-                  opacity: 0.72,
-                }}
-              >
-                Ice Cream Store
-              </p>
+          {/* Vignette */}
+          <div className="ih-vignette" />
 
-              <h1
-                style={{
-                  fontSize: "clamp(44px, 10vw, 132px)",
-                  fontWeight: 900,
-                  letterSpacing: "-0.05em",
-                  lineHeight: 0.95,
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  background: `linear-gradient(to bottom, transparent 0%, ${flavor.textHex} 72%)`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  margin: "10px 0 0",
-                  userSelect: "none",
-                  textAlign: "center",
-                }}
+          {/* FLAVOR LAYERS — all stacked, GSAP controls visibility */}
+          {FLAVORS.map((flavor, i) => (
+            <div
+              key={flavor.id}
+              ref={(el) => { layerRefs.current[i] = el; }}
+              className="ih-layer"
+            >
+              {/* Flavor title */}
+              <div
+                ref={(el) => { titleRefs.current[i] = el; }}
+                className="ih-title"
+                style={{ color: flavor.titleColor }}
               >
                 {flavor.title}
-              </h1>
+              </div>
 
-              <p
-                style={{
-                  marginTop: 12,
-                  fontFamily: "monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.24em",
-                  textTransform: "uppercase",
-                  color: flavor.textHex,
-                  opacity: 0.66,
-                }}
+              {/* Flavor subtitle */}
+              <div
+                ref={(el) => { subRefs.current[i] = el; }}
+                className="ih-sub"
+                style={{ color: flavor.subtitleColor }}
               >
                 {flavor.subtitle}
-              </p>
-            </div>
-
-            <div className={`hs-shadow-${i} ice-hero-shadow`} />
-
-            <div className={`hs-wave-${i} ice-hero-wave`}>
-              <div className="hs-wave-float ice-hero-float">
-                <svg
-                  viewBox="0 0 900 320"
-                  preserveAspectRatio="none"
-                  style={{ width: "100%", height: "100%", overflow: "visible" }}
-                >
-                  <defs>
-                    <linearGradient id={`cream-${i}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="rgba(255,255,255,0.98)" />
-                      <stop offset="45%" stopColor="rgba(255,255,255,0.82)" />
-                      <stop offset="100%" stopColor="rgba(255,255,255,0.18)" />
-                    </linearGradient>
-
-                    <filter id={`goo-${i}`}>
-                      <feGaussianBlur stdDeviation="6" result="blur" />
-                      <feColorMatrix
-                        in="blur"
-                        mode="matrix"
-                        values="
-                          1 0 0 0 0
-                          0 1 0 0 0
-                          0 0 1 0 0
-                          0 0 0 22 -10"
-                        result="goo"
-                      />
-                    </filter>
-                  </defs>
-
-                  <g filter={`url(#goo-${i})`}>
-                    <path
-                      d="
-                        M0 190
-                        C120 130 180 250 300 185
-                        C410 120 510 250 620 180
-                        C720 120 820 220 900 170
-                        L900 320
-                        L0 320
-                        Z
-                      "
-                      fill={`url(#cream-${i})`}
-                    />
-                    <circle cx="180" cy="180" r="42" fill="rgba(255,255,255,0.82)" />
-                    <circle cx="360" cy="170" r="55" fill="rgba(255,255,255,0.72)" />
-                    <circle cx="560" cy="178" r="44" fill="rgba(255,255,255,0.75)" />
-                    <circle cx="760" cy="168" r="52" fill="rgba(255,255,255,0.78)" />
-                  </g>
-                </svg>
-
-                <div className="hs-sheen" />
               </div>
-            </div>
 
-            <div className={`hs-splash-${i} ice-hero-splash`}>
-              <div className="hs-splash-float ice-hero-float">
+              {/* Splash (behind pop, z-index 8) */}
+              <div
+                ref={(el) => { splashRefs.current[i] = el; }}
+                className="ih-splash"
+              >
                 <Image
-                  src={flavor.splash}
+                  src={flavor.splashImage}
                   alt={`${flavor.title} splash`}
-                  fill
-                  className="object-cover object-bottom"
-                  style={{
-                    opacity: 1,
-                    objectPosition: "center bottom",
-                    filter: "drop-shadow(0 14px 24px rgba(0,0,0,0.12))",
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className={`hs-pop-${i} ice-hero-pop`}>
-              <div className="hs-pop-float ice-hero-float">
-                <div className="ice-glow" />
-                <Image
-                  src={flavor.pop}
-                  alt={flavor.title}
-                  fill
+                  width={800}
+                  height={440}
                   priority={i === 0}
-                  className="object-contain object-center"
-                  style={{
-                    filter: "drop-shadow(0 26px 54px rgba(0,0,0,0.22))",
-                    zIndex: 2,
-                  }}
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
+
+              {/* Popsicle (in front, z-index 10) */}
+              <div
+                ref={(el) => { popRefs.current[i] = el; }}
+                className="ih-pop"
+              >
+                <Image
+                  src={flavor.popImage}
+                  alt={`${flavor.title} popsicle`}
+                  width={320}
+                  height={500}
+                  priority={i === 0}
+                  style={{ objectFit: "contain" }}
                 />
               </div>
             </div>
-
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 15,
-                pointerEvents: "none",
-              }}
-            >
-              {Array.from({ length: 8 }).map((_, p) => (
-                <span
-                  key={p}
-                  className="hs-particle"
-                  style={{
-                    position: "absolute",
-                    width: 8 + p * 1.5,
-                    height: 8 + p * 1.5,
-                    borderRadius: "50%",
-                    left: `${10 + p * 11}%`,
-                    top: `${16 + (p % 4) * 10}%`,
-                  }}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
-
-        <div
-          style={{
-            position: "absolute",
-            right: 18,
-            top: "50%",
-            transform: "translateY(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            zIndex: 50,
-          }}
-        >
-          {FLAVORS.map((_, i) => (
-            <div
-              key={i}
-              className={`nav-dot nav-dot-${i}`}
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                border: "1.4px solid rgba(0,0,0,0.35)",
-                backgroundColor: i === 0 ? "rgba(0,0,0,0.58)" : "transparent",
-                transition: "background-color 0.2s ease",
-              }}
-            />
           ))}
+
+          {/* NAV DOTS */}
+          <div className="ih-dots">
+            {FLAVORS.map((_, i) => (
+              <div
+                key={i}
+                className={`ih-dot${active === i ? " active" : ""}`}
+                onClick={() => scrollToFlavor(i)}
+              />
+            ))}
+          </div>
+
         </div>
       </div>
     </>
   );
-                  }
+      }
+                  

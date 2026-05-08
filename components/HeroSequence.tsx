@@ -20,29 +20,26 @@ export default function HeroSequence() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    // ── 1. INITIAL LOAD STATES ──────────────────────────────────────────────
-    // Push all backgrounds off to the right
-    gsap.set(".shutter-bg", { clipPath: "inset(0% 0% 0% 100%)" });
+    // ── 1. BULLETPROOF INITIAL STATES ───────────────────────────────────────
+    // We explicitly set the starting blocks for the flavors that are waiting off-screen
+    gsap.set(".shutter-bg:not(.shutter-bg-0)", { clipPath: "inset(0% 0% 0% 100%)" });
+    gsap.set(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 0%)" }); // Ensure chocolate bg is visible
     
-    // Hide the master groups and tilt them in 3D
-    gsap.set(".flavor-group", { autoAlpha: 0, xPercent: 20, rotationY: 10 });
-    
-    // Hide all internal elements so they can animate in INDIVIDUALLY
-    gsap.set(".hs-text", { opacity: 0, y: 60 });
-    gsap.set(".hs-pop", { yPercent: 100, rotation: 35 });
-    gsap.set(".hs-splash", { yPercent: 60, opacity: 0 });
+    gsap.set(".flavor-group:not(.flavor-group-0)", { autoAlpha: 0, xPercent: 20, rotationY: 10 });
+    gsap.set(".flavor-group:not(.flavor-group-0) .hs-text", { opacity: 0, y: 60 });
+    gsap.set(".flavor-group:not(.flavor-group-0) .hs-pop", { yPercent: 100, rotation: 35 });
+    gsap.set(".flavor-group:not(.flavor-group-0) .hs-splash", { yPercent: 60, opacity: 0 });
 
-    // ── 2. CHOCOLATE (FLAVOR 0) ENTRANCE ────────────────────────────────────
+    // ── 2. CHOCOLATE (FLAVOR 0) ENTRANCE ON LOAD ────────────────────────────
+    // By using .from(), we guarantee Chocolate's true default state is fully visible!
     const initTl = gsap.timeline();
-    
-    initTl.to(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 0%)", duration: 1.2, ease: "power3.inOut" })
-          .to(".flavor-group-0", { autoAlpha: 1, xPercent: 0, rotationY: 0, duration: 1, ease: "power3.out" }, "-=0.8")
-          // Individual element reveals!
-          .to(".flavor-group-0 .hs-text", { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, "-=0.8")
-          .to(".flavor-group-0 .hs-pop", { yPercent: 0, rotation: 0, duration: 1.2, ease: "expo.out" }, "-=0.8")
-          .to(".flavor-group-0 .hs-splash", { yPercent: 0, opacity: 1, duration: 1, ease: "power2.out" }, "-=0.8");
+    initTl.from(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 100%)", duration: 1.2, ease: "power3.inOut" })
+          .from(".flavor-group-0", { autoAlpha: 0, xPercent: 20, rotationY: 10, duration: 1, ease: "power3.out" }, "-=0.8")
+          .from(".flavor-group-0 .hs-text", { opacity: 0, y: 60, duration: 1, ease: "power3.out" }, "-=0.8")
+          .from(".flavor-group-0 .hs-pop", { yPercent: 100, rotation: 35, duration: 1.2, ease: "expo.out" }, "-=0.8")
+          .from(".flavor-group-0 .hs-splash", { yPercent: 60, opacity: 0, duration: 1, ease: "power2.out" }, "-=0.8");
 
-    // ── 3. CONTINUOUS "LOVE MOTIONS" (3D FLOATING) ──────────────────────────
+    // ── 3. CONTINUOUS "SURYA 3D FLOATING" MOTIONS ───────────────────────────
     gsap.to(".float-pop", {
       y: -20, rotationX: 8, rotationY: 4, duration: 3,
       yoyo: true, repeat: -1, ease: "sine.inOut", stagger: 0.2
@@ -53,16 +50,16 @@ export default function HeroSequence() {
       yoyo: true, repeat: -1, ease: "sine.inOut", stagger: 0.3
     });
 
-    // ── 4. PERPLEXITY SCROLL & SNAP TIMELINE ────────────────────────────────
+    // ── 4. PERPLEXITY SCROLL & SNAP TIMELINE (The Secret Sauce) ─────────────
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
         end: "+=300%", 
         pin: true,
-        scrub: 0.5, // Butter smooth drag
+        scrub: 0.5, // Butter smooth
         snap: {
-          snapTo: "labelsDirectional", // Instant locking
+          snapTo: "labelsDirectional", 
           duration: { min: 0.4, max: 0.7 },
           delay: 0, 
           ease: "power2.inOut" 
@@ -75,20 +72,24 @@ export default function HeroSequence() {
     FLAVORS.forEach((_, i) => {
       if (i === 0) return; 
 
-      // 1. Shutter background wipe
-      tl.to(`.shutter-bg-${i}`, { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power2.inOut" }, i - 1);
+      // 💥 THE FIX: using fromTo forces GSAP to remember exact states in BOTH directions!
+      
+      // 1. Shutter background wipes in
+      tl.fromTo(`.shutter-bg-${i}`, 
+        { clipPath: "inset(0% 0% 0% 100%)" }, 
+        { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power2.inOut" }, i - 1);
 
-      // 2. Animate previous flavor OUT (Individual elements disappear)
-      tl.to(`.flavor-group-${i - 1} .hs-text`, { opacity: 0, y: -60, duration: 0.5, ease: "power2.in" }, i - 1);
-      tl.to(`.flavor-group-${i - 1} .hs-pop`, { yPercent: -100, rotation: -20, duration: 0.5, ease: "power2.in" }, i - 1);
-      tl.to(`.flavor-group-${i - 1} .hs-splash`, { yPercent: 60, opacity: 0, duration: 0.5, ease: "power2.in" }, i - 1);
-      tl.to(`.flavor-group-${i - 1}`, { autoAlpha: 0, xPercent: -20, rotationY: -10, duration: 0.8 }, i - 1);
+      // 2. Previous flavor flies OUT 
+      tl.fromTo(`.flavor-group-${i - 1} .hs-text`,   { opacity: 1, y: 0 }, { opacity: 0, y: -60, duration: 0.5, ease: "power2.in" }, i - 1);
+      tl.fromTo(`.flavor-group-${i - 1} .hs-pop`,    { yPercent: 0, rotation: 0 }, { yPercent: -100, rotation: -20, duration: 0.5, ease: "power2.in" }, i - 1);
+      tl.fromTo(`.flavor-group-${i - 1} .hs-splash`, { opacity: 1, yPercent: 0 }, { opacity: 0, yPercent: 60, duration: 0.5, ease: "power2.in" }, i - 1);
+      tl.fromTo(`.flavor-group-${i - 1}`,           { autoAlpha: 1, xPercent: 0, rotationY: 0 }, { autoAlpha: 0, xPercent: -20, rotationY: -10, duration: 0.8 }, i - 1);
 
-      // 3. Animate new flavor IN (Individual elements appear)
-      tl.to(`.flavor-group-${i}`, { autoAlpha: 1, xPercent: 0, rotationY: 0, duration: 0.8, ease: "power2.out" }, i - 0.8);
-      tl.to(`.flavor-group-${i} .hs-text`, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, i - 0.6);
-      tl.to(`.flavor-group-${i} .hs-pop`, { yPercent: 0, rotation: 0, duration: 1, ease: "expo.out" }, i - 0.6);
-      tl.to(`.flavor-group-${i} .hs-splash`, { yPercent: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, i - 0.6);
+      // 3. New flavor flies IN 
+      tl.fromTo(`.flavor-group-${i}`,           { autoAlpha: 0, xPercent: 20, rotationY: 10 }, { autoAlpha: 1, xPercent: 0, rotationY: 0, duration: 0.8, ease: "power2.out" }, i - 0.8);
+      tl.fromTo(`.flavor-group-${i} .hs-text`,   { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, i - 0.6);
+      tl.fromTo(`.flavor-group-${i} .hs-pop`,    { yPercent: 100, rotation: 35 }, { yPercent: 0, rotation: 0, duration: 1, ease: "expo.out" }, i - 0.6);
+      tl.fromTo(`.flavor-group-${i} .hs-splash`, { opacity: 0, yPercent: 60 }, { opacity: 1, yPercent: 0, duration: 0.8, ease: "power2.out" }, i - 0.6);
 
       tl.addLabel(`flavor${i}`, i); 
     });
@@ -137,7 +138,7 @@ export default function HeroSequence() {
             </h1>
           </div>
 
-          {/* Popsicle (hs-pop handles scroll entry, float-pop handles continuous floating) */}
+          {/* Popsicle (.hs-pop for scroll transitions, .float-pop for endless 3D animation) */}
           <div className="hs-pop absolute top-[12%] z-30 w-full flex items-center justify-center pointer-events-none">
             <div className="float-pop relative w-[280px] h-[550px] md:w-[380px] md:h-[750px]" style={{ filter: "drop-shadow(0 30px 40px rgba(0,0,0,0.35))" }}>
               <Image 
@@ -150,7 +151,7 @@ export default function HeroSequence() {
             </div>
           </div>
 
-          {/* Splash (hs-splash handles scroll entry, float-splash handles continuous floating) */}
+          {/* Splash (.hs-splash for scroll transitions, .float-splash for endless 3D animation) */}
           <div className="hs-splash absolute bottom-0 z-20 w-full h-[40vh] md:h-[45vh] pointer-events-none flex items-end justify-center">
             <div className="float-splash relative w-full h-full">
               <Image 
@@ -175,4 +176,4 @@ export default function HeroSequence() {
 
     </div>
   );
-}
+                }

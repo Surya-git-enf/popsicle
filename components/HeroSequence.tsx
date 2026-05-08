@@ -21,23 +21,34 @@ export default function HeroSequence() {
 
   useGSAP(() => {
     // ── 1. BULLETPROOF INITIAL STATES ───────────────────────────────────────
-    // We explicitly set the starting blocks for the flavors that are waiting off-screen
     gsap.set(".shutter-bg:not(.shutter-bg-0)", { clipPath: "inset(0% 0% 0% 100%)" });
-    gsap.set(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 0%)" }); // Ensure chocolate bg is visible
+    gsap.set(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 0%)" }); 
     
     gsap.set(".flavor-group:not(.flavor-group-0)", { autoAlpha: 0, xPercent: 20, rotationY: 10 });
     gsap.set(".flavor-group:not(.flavor-group-0) .hs-text", { opacity: 0, y: 60 });
     gsap.set(".flavor-group:not(.flavor-group-0) .hs-pop", { yPercent: 100, rotation: 35 });
     gsap.set(".flavor-group:not(.flavor-group-0) .hs-splash", { yPercent: 60, opacity: 0 });
 
-    // ── 2. CHOCOLATE (FLAVOR 0) ENTRANCE ON LOAD ────────────────────────────
-    // By using .from(), we guarantee Chocolate's true default state is fully visible!
+    // ── 2. THE PREMIUM LOADING SCREEN & ENTRANCE ────────────────────────────
     const initTl = gsap.timeline();
-    initTl.from(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 100%)", duration: 1.2, ease: "power3.inOut" })
-          .from(".flavor-group-0", { autoAlpha: 0, xPercent: 20, rotationY: 10, duration: 1, ease: "power3.out" }, "-=0.8")
-          .from(".flavor-group-0 .hs-text", { opacity: 0, y: 60, duration: 1, ease: "power3.out" }, "-=0.8")
-          .from(".flavor-group-0 .hs-pop", { yPercent: 100, rotation: 35, duration: 1.2, ease: "expo.out" }, "-=0.8")
-          .from(".flavor-group-0 .hs-splash", { yPercent: 60, opacity: 0, duration: 1, ease: "power2.out" }, "-=0.8");
+
+    // A. Animate the progress bar
+    initTl.fromTo(".loader-bar", 
+      { scaleX: 0 }, 
+      { scaleX: 1, duration: 1.5, ease: "power2.inOut", transformOrigin: "left" }
+    )
+    // B. Slide the entire loading screen up and out of the way
+    .to(".loader-wrapper", {
+      yPercent: -100,
+      duration: 1.2,
+      ease: "expo.inOut"
+    })
+    // C. CHAINED: The exact moment the loader clears, Chocolate drops in!
+    .from(".shutter-bg-0", { clipPath: "inset(0% 0% 0% 100%)", duration: 1.2, ease: "power3.inOut" }, "-=0.6")
+    .from(".flavor-group-0", { autoAlpha: 0, xPercent: 20, rotationY: 10, duration: 1, ease: "power3.out" }, "-=0.8")
+    .from(".flavor-group-0 .hs-text", { opacity: 0, y: 60, duration: 1, ease: "power3.out" }, "-=0.8")
+    .from(".flavor-group-0 .hs-pop", { yPercent: 100, rotation: 35, duration: 1.2, ease: "expo.out" }, "-=0.8")
+    .from(".flavor-group-0 .hs-splash", { yPercent: 60, opacity: 0, duration: 1, ease: "power2.out" }, "-=0.8");
 
     // ── 3. CONTINUOUS "SURYA 3D FLOATING" MOTIONS ───────────────────────────
     gsap.to(".float-pop", {
@@ -50,14 +61,14 @@ export default function HeroSequence() {
       yoyo: true, repeat: -1, ease: "sine.inOut", stagger: 0.3
     });
 
-    // ── 4. PERPLEXITY SCROLL & SNAP TIMELINE (The Secret Sauce) ─────────────
+    // ── 4. PERPLEXITY SCROLL & SNAP TIMELINE ────────────────────────────────
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top top",
         end: "+=300%", 
         pin: true,
-        scrub: 0.5, // Butter smooth
+        scrub: 0.5, 
         snap: {
           snapTo: "labelsDirectional", 
           duration: { min: 0.4, max: 0.7 },
@@ -72,8 +83,6 @@ export default function HeroSequence() {
     FLAVORS.forEach((_, i) => {
       if (i === 0) return; 
 
-      // 💥 THE FIX: using fromTo forces GSAP to remember exact states in BOTH directions!
-      
       // 1. Shutter background wipes in
       tl.fromTo(`.shutter-bg-${i}`, 
         { clipPath: "inset(0% 0% 0% 100%)" }, 
@@ -103,6 +112,16 @@ export default function HeroSequence() {
       style={{ perspective: "1200px" }} 
     >
       
+      {/* ── NEW: PREMIUM LOADING SCREEN ── */}
+      <div className="loader-wrapper absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center">
+        <p className="text-white/80 font-mono text-[10px] tracking-[0.4em] uppercase mb-4">
+          Initiating...
+        </p>
+        <div className="w-48 h-[1px] bg-white/10 overflow-hidden">
+          <div className="loader-bar w-full h-full bg-white" />
+        </div>
+      </div>
+
       {/* ── BACKGROUND SHUTTERS ── */}
       <div className="absolute inset-0 z-0">
         {FLAVORS.map((flavor, i) => (
@@ -138,7 +157,7 @@ export default function HeroSequence() {
             </h1>
           </div>
 
-          {/* Popsicle (.hs-pop for scroll transitions, .float-pop for endless 3D animation) */}
+          {/* Popsicle */}
           <div className="hs-pop absolute top-[12%] z-30 w-full flex items-center justify-center pointer-events-none">
             <div className="float-pop relative w-[280px] h-[550px] md:w-[380px] md:h-[750px]" style={{ filter: "drop-shadow(0 30px 40px rgba(0,0,0,0.35))" }}>
               <Image 
@@ -151,7 +170,7 @@ export default function HeroSequence() {
             </div>
           </div>
 
-          {/* Splash (.hs-splash for scroll transitions, .float-splash for endless 3D animation) */}
+          {/* Splash */}
           <div className="hs-splash absolute bottom-0 z-20 w-full h-[40vh] md:h-[45vh] pointer-events-none flex items-end justify-center">
             <div className="float-splash relative w-full h-full">
               <Image 
@@ -170,10 +189,10 @@ export default function HeroSequence() {
       {/* ── SURYA PRO WATERMARK ── */}
       <div className="absolute bottom-6 right-8 z-50 pointer-events-none opacity-60">
         <p className="font-mono text-[10px] tracking-[0.3em] text-white uppercase mix-blend-difference">
-          3D Experience by Surya
+          Lickers
         </p>
       </div>
 
     </div>
   );
-                }
+}

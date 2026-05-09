@@ -27,17 +27,17 @@ export default function TiltShowcase() {
 
     // ── 1. Master Horizontal Scroll (Pinned) ─────────────────────────────────
     const horizontalScroll = gsap.to(slider, {
-      xPercent: -100 * (cards.length - 1), 
+      xPercent: -100 * (cards.length - 1), // Dynamically slides to the final item
       ease: "none", 
       scrollTrigger: {
-        trigger: pinRef.current, // Pin only the horizontal slider wrapper
+        trigger: pinRef.current,
         pin: true,     
         scrub: 1,      
-        end: "+=300%", 
+        end: "+=100%", // CHANGED: Now exactly 100% as requested!
       },
     });
 
-    // ── 2. The 40° Swinging Card Animations ──────────────────────────────────
+    // ── 2. The 40° Swinging Animations for ALL items (Cards + Text) ──────────
     cards.forEach((card) => {
       const target = card.querySelector(".tilt-target");
       const bgText = card.querySelector(".card-bg-text");
@@ -53,67 +53,37 @@ export default function TiltShowcase() {
         }
       });
 
-      // Swings from 40° to 0° dead center, then back to 40°
-      tl.fromTo(target, 
-        { rotation: 40, scale: 0.7, y: 150 }, 
-        { rotation: 0, scale: 1, y: 0, duration: 1, ease: "power2.out" }
-      )
-      .to(target, 
-        { rotation: 40, scale: 0.7, y: 150, duration: 1, ease: "power2.in" }
-      );
+      // All targets (both popsicles and the final text) swing 40° -> 0° -> 40°
+      if (target) {
+        tl.fromTo(target, 
+          { rotation: 40, scale: 0.7, y: 150 }, 
+          { rotation: 0, scale: 1, y: 0, duration: 1, ease: "power2.out" }
+        )
+        .to(target, 
+          { rotation: 40, scale: 0.7, y: 150, duration: 1, ease: "power2.in" }
+        );
+      }
 
-      // Parallax on the popsicle so it floats up inside the card
-      gsap.fromTo(popImage,
-        { y: 30 },
-        {
-          y: -30,
-          ease: "none",
-          scrollTrigger: {
-            trigger: card,
-            containerAnimation: horizontalScroll,
-            start: "left right",
-            end: "right left",
-            scrub: true
+      // We only apply these parallax effects if the item is a popsicle card
+      if (popImage) {
+        gsap.fromTo(popImage,
+          { y: 30 },
+          {
+            y: -30, ease: "none",
+            scrollTrigger: { trigger: card, containerAnimation: horizontalScroll, start: "left right", end: "right left", scrub: true }
           }
-        }
-      );
+        );
+      }
 
-      // Parallax on the giant internal background text
-      gsap.fromTo(bgText, 
-        { y: 100 },
-        { 
-          y: -100, 
-          ease: "none",
-          scrollTrigger: {
-            trigger: card,
-            containerAnimation: horizontalScroll,
-            start: "left right",
-            end: "right left",
-            scrub: 1,
+      if (bgText) {
+        gsap.fromTo(bgText, 
+          { y: 100 },
+          { 
+            y: -100, ease: "none",
+            scrollTrigger: { trigger: card, containerAnimation: horizontalScroll, start: "left right", end: "right left", scrub: 1 }
           }
-        }
-      );
-    });
-
-    // ── 3. OUTRO SWING & REVEAL ─────────────────────────────────────────────
-    // Continuous 3D floating animation (same as popsicles)
-    gsap.to(".outro-swing", {
-      y: -20, rotationX: 10, rotationY: 5, duration: 3,
-      yoyo: true, repeat: -1, ease: "sine.inOut"
-    });
-
-    // Rises up smoothly as normal vertical scroll resumes after Pistachio
-    gsap.from(".outro-swing", {
-      scrollTrigger: {
-        trigger: ".outro-section",
-        start: "top 80%",
-        end: "center center",
-        scrub: 1
-      },
-      y: 150,
-      rotationX: -45,
-      opacity: 0,
-      ease: "power2.out"
+        );
+      }
     });
 
   }, { scope: sectionRef });
@@ -121,6 +91,20 @@ export default function TiltShowcase() {
   return (
     <section ref={sectionRef} className="relative w-full bg-[#F5F5DC]">
       
+      {/* Securely load custom Google Fonts for the final text slide */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Special+Elite&display=swap');
+      `}} />
+
+      {/* Custom SVG Displacement Filter for "Melt" Edges */}
+      <svg className="absolute w-0 h-0 pointer-events-none">
+        <filter id="ink-melt">
+          <feTurbulence type="fractalNoise" baseFrequency="0.15" numOctaves="1" result="warp" />
+          <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="2.5" in="SourceGraphic" in2="warp" />
+          <feGaussianBlur stdDeviation="0.6" result="blur" />
+        </filter>
+      </svg>
+
       {/* ── PINNED HORIZONTAL SECTION ── */}
       <div ref={pinRef} className="relative w-full h-screen overflow-hidden">
         
@@ -131,19 +115,18 @@ export default function TiltShowcase() {
           </h2>
         </div>
 
-        {/* Horizontal Slider Track */}
-        <div ref={sliderRef} className="flex w-[400vw] h-full">
+        {/* Horizontal Slider Track (Now 500vw wide to fit 4 cards + 1 text slide) */}
+        <div ref={sliderRef} className="flex w-[500vw] h-full">
+          
+          {/* SLIDES 1-4: The Popsicle Cards */}
           {FLAVORS.map((flavor) => (
             <div key={flavor.id} className="tilt-card relative w-screen h-full flex items-center justify-center">
               
-              {/* THE PREMIUM CARD */}
               <div 
                 className="tilt-target relative z-10 flex flex-col items-center justify-end w-[280px] h-[400px] md:w-[360px] md:h-[520px] rounded-[40px] shadow-[0_30px_60px_rgba(0,0,0,0.25)] border-2 border-white/40"
                 style={{ background: `linear-gradient(135deg, ${flavor.gradFrom}, ${flavor.gradTo})` }}
               >
                 
-                {/* ── NEW: Flavor Name Background (Lying INSIDE the card) ── */}
-                {/* overflow-hidden keeps the giant text trapped inside the card's rounded corners */}
                 <div className="absolute inset-0 overflow-hidden rounded-[38px] flex items-center justify-center z-0">
                   <div className="card-bg-text">
                     <h3 
@@ -158,7 +141,6 @@ export default function TiltShowcase() {
                   </div>
                 </div>
 
-                {/* Popsicle Image (z-20 breaks out of the top bounding box!) */}
                 <div className="card-pop-image absolute -top-16 w-[200px] h-[420px] md:-top-24 md:w-[260px] md:h-[550px] z-20" style={{ filter: "drop-shadow(0 40px 40px rgba(0,0,0,0.35))" }}>
                   <Image src={`/images/${flavor.id}-pop.png`} alt={flavor.name} fill className="object-contain object-bottom" />
                 </div>
@@ -166,48 +148,33 @@ export default function TiltShowcase() {
               </div>
             </div>
           ))}
+
+          {/* SLIDE 5: The Grand Finale Typography */}
+          <div className="tilt-card relative w-screen h-full flex items-center justify-center">
+            {/* Using tilt-target gives this text exactly the same 40° swinging animation! */}
+            <div className="tilt-target flex flex-col items-center justify-center w-full px-4" style={{ perspective: "1200px" }}>
+              <h2 
+                className="text-[#3E2723] text-5xl md:text-7xl mb-2" 
+                style={{ fontFamily: "'Special Elite', monospace" }}
+              >
+                Our flavours,
+              </h2>
+              
+              <h2 
+                className="text-[#3E2723] text-7xl md:text-9xl mt-[-10px]" 
+                style={{
+                  fontFamily: "'Great Vibes', cursive",
+                  transform: "rotate(-4deg)",
+                  filter: "url(#ink-melt)", // Liquid ink bleed effect
+                }}
+              >
+                your obsession.
+              </h2>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      {/* ── UNPINNED OUTRO SECTION (Fast Vertical Scroll) ── */}
-      <div className="outro-section relative w-full h-[60vh] flex flex-col items-center justify-center overflow-hidden" style={{ perspective: "1200px" }}>
-        
-        {/* Securely load custom Google Fonts */}
-        <style dangerouslySetInnerHTML={{__html: `
-          @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Special+Elite&display=swap');
-        `}} />
-
-        {/* Custom SVG Displacement Filter for "Melt" Edges */}
-        <svg className="absolute w-0 h-0 pointer-events-none">
-          <filter id="ink-melt">
-            <feTurbulence type="fractalNoise" baseFrequency="0.15" numOctaves="1" result="warp" />
-            <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="2.5" in="SourceGraphic" in2="warp" />
-            <feGaussianBlur stdDeviation="0.6" result="blur" />
-          </filter>
-        </svg>
-
-        {/* The 3D Swinging Text Block */}
-        <div className="outro-swing flex flex-col items-center justify-center z-10 w-full px-4">
-          <h2 
-            className="text-black text-5xl md:text-7xl mb-2" 
-            style={{ fontFamily: "'Special Elite', monospace" }}
-          >
-            Our flavours,
-          </h2>
-          
-          <h2 
-            className="text-black text-7xl md:text-9xl mt-[-10px]" 
-            style={{
-              fontFamily: "'Great Vibes', cursive",
-              transform: "rotate(-4deg)",
-              filter: "url(#ink-melt)", // Liquid ink bleed effect!
-            }}
-          >
-            your obsession.
-          </h2>
-        </div>
-      </div>
-
     </section>
   );
 }

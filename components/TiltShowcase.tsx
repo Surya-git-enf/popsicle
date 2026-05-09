@@ -37,7 +37,7 @@ export default function TiltShowcase() {
         trigger: pinRef.current,
         pin: true,     
         scrub: 1,      
-        end: "+=300%", // Luxurious, butter-smooth duration
+        end: () => "+=" + (slider.scrollWidth - window.innerWidth),
         invalidateOnRefresh: true, // Recalculates perfectly if phone is rotated
       },
     });
@@ -183,4 +183,4 @@ export default function TiltShowcase() {
       </div>
     </section>
   );
-}
+                  }

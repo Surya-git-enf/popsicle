@@ -25,19 +25,19 @@ export default function TiltShowcase() {
     const slider = sliderRef.current;
     const cards = gsap.utils.toArray(".tilt-card") as HTMLElement[];
 
-    // ── 1. Master Horizontal Scroll (Pinned) ─────────────────────────────────
+    // ── 1. Master Horizontal Scroll (Restored to 300%!) ──────────────────────
     const horizontalScroll = gsap.to(slider, {
-      xPercent: -100 * (cards.length - 1), // Dynamically slides to the final item
+      xPercent: -100 * (cards.length - 1), 
       ease: "none", 
       scrollTrigger: {
         trigger: pinRef.current,
         pin: true,     
         scrub: 1,      
-        end: "+=100%", // CHANGED: Now exactly 100% as requested!
+        end: "+=300%", // Back to the buttery smooth, slow drag
       },
     });
 
-    // ── 2. The 40° Swinging Animations for ALL items (Cards + Text) ──────────
+    // ── 2. The 40° Swinging Animations ───────────────────────────────────────
     cards.forEach((card) => {
       const target = card.querySelector(".tilt-target");
       const bgText = card.querySelector(".card-bg-text");
@@ -53,7 +53,6 @@ export default function TiltShowcase() {
         }
       });
 
-      // All targets (both popsicles and the final text) swing 40° -> 0° -> 40°
       if (target) {
         tl.fromTo(target, 
           { rotation: 40, scale: 0.7, y: 150 }, 
@@ -64,7 +63,6 @@ export default function TiltShowcase() {
         );
       }
 
-      // We only apply these parallax effects if the item is a popsicle card
       if (popImage) {
         gsap.fromTo(popImage,
           { y: 30 },
@@ -75,11 +73,12 @@ export default function TiltShowcase() {
         );
       }
 
+      // Horizontal Parallax for the Background Text
       if (bgText) {
         gsap.fromTo(bgText, 
-          { y: 100 },
+          { x: 100 },
           { 
-            y: -100, ease: "none",
+            x: -100, ease: "none",
             scrollTrigger: { trigger: card, containerAnimation: horizontalScroll, start: "left right", end: "right left", scrub: 1 }
           }
         );
@@ -91,12 +90,10 @@ export default function TiltShowcase() {
   return (
     <section ref={sectionRef} className="relative w-full bg-[#F5F5DC]">
       
-      {/* Securely load custom Google Fonts for the final text slide */}
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Special+Elite&display=swap');
       `}} />
 
-      {/* Custom SVG Displacement Filter for "Melt" Edges */}
       <svg className="absolute w-0 h-0 pointer-events-none">
         <filter id="ink-melt">
           <feTurbulence type="fractalNoise" baseFrequency="0.15" numOctaves="1" result="warp" />
@@ -105,32 +102,32 @@ export default function TiltShowcase() {
         </filter>
       </svg>
 
-      {/* ── PINNED HORIZONTAL SECTION ── */}
       <div ref={pinRef} className="relative w-full h-screen overflow-hidden">
         
-        {/* Top Header */}
         <div className="absolute top-10 left-0 w-full text-center z-20">
           <h2 className="text-sm font-mono tracking-[0.4em] text-[#3E2723] uppercase">
             The Collection
           </h2>
         </div>
 
-        {/* Horizontal Slider Track (Now 500vw wide to fit 4 cards + 1 text slide) */}
-        <div ref={sliderRef} className="flex w-[500vw] h-full">
+        {/* 460vw width: 4 full-screen cards (400vw) + 1 narrower text slide (60vw) */}
+        <div ref={sliderRef} className="flex w-[460vw] h-full">
           
-          {/* SLIDES 1-4: The Popsicle Cards */}
+          {/* SLIDES 1-4: The Landscape Popsicle Cards */}
           {FLAVORS.map((flavor) => (
             <div key={flavor.id} className="tilt-card relative w-screen h-full flex items-center justify-center">
               
+              {/* Width > Height! Landscape cinematic rectangle */}
               <div 
-                className="tilt-target relative z-10 flex flex-col items-center justify-end w-[280px] h-[400px] md:w-[360px] md:h-[520px] rounded-[40px] shadow-[0_30px_60px_rgba(0,0,0,0.25)] border-2 border-white/40"
+                className="tilt-target relative z-10 flex flex-col items-center justify-center w-[340px] h-[220px] md:w-[560px] md:h-[320px] rounded-[40px] shadow-[0_30px_60px_rgba(0,0,0,0.25)] border-2 border-white/40"
                 style={{ background: `linear-gradient(135deg, ${flavor.gradFrom}, ${flavor.gradTo})` }}
               >
                 
+                {/* Horizontal Background Text */}
                 <div className="absolute inset-0 overflow-hidden rounded-[38px] flex items-center justify-center z-0">
                   <div className="card-bg-text">
                     <h3 
-                      className="text-[100px] md:text-[140px] font-black uppercase tracking-tighter leading-none -rotate-90 opacity-20"
+                      className="text-[60px] md:text-[90px] font-black uppercase tracking-tighter leading-none opacity-20 whitespace-nowrap"
                       style={{ 
                         color: flavor.textHex,
                         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
@@ -141,31 +138,32 @@ export default function TiltShowcase() {
                   </div>
                 </div>
 
-                <div className="card-pop-image absolute -top-16 w-[200px] h-[420px] md:-top-24 md:w-[260px] md:h-[550px] z-20" style={{ filter: "drop-shadow(0 40px 40px rgba(0,0,0,0.35))" }}>
-                  <Image src={`/images/${flavor.id}-pop.png`} alt={flavor.name} fill className="object-contain object-bottom" />
+                {/* Popsicle Image (Adjusted offset so it breaks beautifully out of the landscape card) */}
+                <div className="card-pop-image absolute -top-24 w-[180px] h-[380px] md:-top-32 md:w-[240px] md:h-[500px] z-20" style={{ filter: "drop-shadow(0 40px 40px rgba(0,0,0,0.35))" }}>
+                  <Image src={`/images/${flavor.id}-pop.png`} alt={flavor.name} fill className="object-contain object-center" />
                 </div>
 
               </div>
             </div>
           ))}
 
-          {/* SLIDE 5: The Grand Finale Typography */}
-          <div className="tilt-card relative w-screen h-full flex items-center justify-center">
-            {/* Using tilt-target gives this text exactly the same 40° swinging animation! */}
-            <div className="tilt-target flex flex-col items-center justify-center w-full px-4" style={{ perspective: "1200px" }}>
+          {/* SLIDE 5: The Grand Finale Typography (Reduced width to 60vw to make it appear faster!) */}
+          <div className="tilt-card relative w-[60vw] h-full flex items-center justify-center pr-10">
+            <div className="tilt-target flex flex-col items-center justify-center w-full" style={{ perspective: "1200px" }}>
               <h2 
-                className="text-[#3E2723] text-5xl md:text-7xl mb-2" 
-                style={{ fontFamily: "'Special Elite', monospace" }}
+                className="text-[#3E2723] text-4xl md:text-6xl mb-2" 
+                style={{ fontFamily: "'Special Elite', monospace", whiteSpace: "nowrap" }}
               >
                 Our flavours,
               </h2>
               
               <h2 
-                className="text-[#3E2723] text-7xl md:text-9xl mt-[-10px]" 
+                className="text-[#3E2723] text-6xl md:text-8xl mt-[-10px]" 
                 style={{
                   fontFamily: "'Great Vibes', cursive",
                   transform: "rotate(-4deg)",
-                  filter: "url(#ink-melt)", // Liquid ink bleed effect
+                  filter: "url(#ink-melt)", 
+                  whiteSpace: "nowrap"
                 }}
               >
                 your obsession.

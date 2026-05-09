@@ -32,7 +32,7 @@ export default function TiltShowcase() {
         trigger: sectionRef.current,
         pin: true,     // Pins the section until the horizontal scroll finishes
         scrub: 1,      // 🧈 Butter smooth drag
-        end: "+=300%", // Requires 3 full viewport heights to scroll through the 4 cards
+        end: "+=250%", // Requires 3 full viewport heights to scroll through the 4 cards
       },
     });
 
@@ -88,7 +88,7 @@ export default function TiltShowcase() {
     >
       <div className="absolute top-10 left-0 w-full text-center z-20">
         <h2 className="text-sm font-mono tracking-[0.4em] text-[#3E2723] uppercase">
-          The Collection
+          Our Collection
         </h2>
       </div>
 

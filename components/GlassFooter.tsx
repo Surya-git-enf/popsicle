@@ -197,7 +197,7 @@ export default function GlassFooter() {
               "0 0 0 1px rgba(255,255,255,0.12), 0 10px 30px rgba(255,140,0,0.28)";
           }}
         >
-          Book now
+          Book a Call
         </button>
       </div>
 

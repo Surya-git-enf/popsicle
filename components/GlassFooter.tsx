@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef } from "react";
@@ -15,8 +16,15 @@ export default function GlassFooter() {
   const loopStartRef = useRef(0);
 
   useGSAP(() => {
-    gsap.set(panelRef.current, { y: 100, scale: 0.92, opacity: 0 });
-    gsap.set(overlayRef.current, { opacity: 0 });
+    gsap.set(panelRef.current, {
+      y: 100,
+      scale: 0.92,
+      opacity: 0,
+    });
+
+    gsap.set(overlayRef.current, {
+      opacity: 0,
+    });
   }, { scope: sectionRef });
 
   const openPanel = () => {
@@ -41,16 +49,20 @@ export default function GlassFooter() {
     if (!vid) return;
 
     const { currentTime, duration } = vid;
+
     if (!duration) return;
 
-    // Open panel once when video reaches the last 2 seconds
+    // Open panel when last 2 seconds start
     if (!hasShown.current && currentTime >= duration - 2) {
       hasShown.current = true;
+
+      // Save loop start point
       loopStartRef.current = duration - 2;
+
       openPanel();
     }
 
-    // After the panel is shown, keep looping only the last 2 seconds
+    // Loop ONLY the final 2 seconds forever
     if (hasShown.current && currentTime >= duration - 0.05) {
       vid.currentTime = loopStartRef.current;
       vid.play().catch(() => {});
@@ -68,8 +80,10 @@ export default function GlassFooter() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        background: "#000",
       }}
     >
+      {/* Background Video */}
       <video
         ref={videoRef}
         autoPlay
@@ -88,17 +102,21 @@ export default function GlassFooter() {
         <source src="/videos/ice.mp4" type="video/mp4" />
       </video>
 
+      {/* Dark Overlay */}
       <div
         ref={overlayRef}
         style={{
           position: "absolute",
           inset: 0,
           zIndex: 1,
-          backgroundColor: "rgba(0,0,0,0.22)",
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.45))",
           backdropFilter: "blur(2px)",
+          WebkitBackdropFilter: "blur(2px)",
         }}
       />
 
+      {/* Glass Panel */}
       <div
         ref={panelRef}
         style={{
@@ -106,26 +124,35 @@ export default function GlassFooter() {
           zIndex: 10,
           width: "min(92vw, 560px)",
           borderRadius: 28,
-          padding: "40px",
-          background: "linear-gradient(to bottom, #141414B8, #0A0A0AE0)",
+          padding: "42px",
+          background:
+            "linear-gradient(to bottom, rgba(20,20,20,0.72), rgba(10,10,10,0.88))",
           border: "1px solid rgba(255,255,255,0.10)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           boxShadow:
-            "0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)",
+            "0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)",
           textAlign: "center",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+        {/* Logo */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 22,
+          }}
+        >
           <div
             style={{
               position: "relative",
               width: 96,
               height: 96,
-              borderRadius: 22,
+              borderRadius: 24,
               overflow: "hidden",
-              boxShadow: "0 0 18px rgba(255,255,255,0.9), 0 0 44px rgba(255,255,255,0.42)",
-              border: "1px solid rgba(255,255,255,0.20)",
+              border: "1px solid rgba(255,255,255,0.18)",
+              boxShadow:
+                "0 0 18px rgba(255,255,255,0.9), 0 0 44px rgba(255,255,255,0.42)",
             }}
           >
             <Image
@@ -137,70 +164,84 @@ export default function GlassFooter() {
           </div>
         </div>
 
+        {/* Heading */}
         <h2
           style={{
             marginBottom: 16,
             fontFamily: "Georgia, 'Times New Roman', serif",
-            fontSize: "clamp(28px, 4.2vw, 54px)",
+            fontSize: "clamp(30px, 4.4vw, 56px)",
             fontWeight: 400,
-            lineHeight: 1.08,
+            lineHeight: 1.06,
             color: "#fff",
-            letterSpacing: "-0.02em",
+            letterSpacing: "-0.03em",
           }}
         >
-          Playful - design 3D website
+          Playful — Design 3D Websites
         </h2>
 
+        {/* Description */}
         <p
           style={{
-            maxWidth: 420,
-            margin: "0 auto 24px",
+            maxWidth: 430,
+            margin: "0 auto 28px",
             fontFamily: "system-ui, sans-serif",
             fontSize: "clamp(13px, 1.2vw, 15px)",
             lineHeight: 1.75,
-            color: "rgba(255,255,255,0.70)",
+            color: "rgba(255,255,255,0.72)",
             letterSpacing: "0.01em",
             fontWeight: 300,
           }}
         >
-          Build cinematic, high-impact web experiences that feel premium,
-          futuristic, and unforgettable.
+          Build cinematic digital experiences with immersive animations,
+          futuristic visuals, and premium interactions that make your brand
+          unforgettable.
         </p>
 
-        <button
+        {/* CTA BUTTON */}
+        <a
+          href="https://forms.gle/TVrR86bnF1fvzEnA7"
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
             position: "relative",
-            border: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             borderRadius: 999,
-            padding: "14px 28px",
-            background: "linear-gradient(to bottom, #ff9a1f, #ff7a00)",
+            padding: "15px 32px",
+            background:
+              "linear-gradient(to bottom, #ff9a1f, #ff7a00)",
             color: "#fff",
             fontFamily: "system-ui, sans-serif",
             fontSize: 14,
             fontWeight: 700,
-            letterSpacing: "0.04em",
+            letterSpacing: "0.05em",
+            textDecoration: "none",
             cursor: "pointer",
             boxShadow:
               "0 0 0 1px rgba(255,255,255,0.12), 0 10px 30px rgba(255,140,0,0.28)",
             transition: "all 0.3s ease-out",
           }}
           onMouseEnter={(e) => {
-            const b = e.currentTarget as HTMLButtonElement;
-            b.style.transform = "translateY(-2px)";
+            const b = e.currentTarget as HTMLAnchorElement;
+
+            b.style.transform = "translateY(-2px) scale(1.02)";
             b.style.boxShadow =
               "0 0 0 1px rgba(255,255,255,0.18), 0 0 24px rgba(255,140,0,0.85), 0 0 64px rgba(255,120,0,0.55), 0 16px 40px rgba(255,120,0,0.30)";
           }}
           onMouseLeave={(e) => {
-            const b = e.currentTarget as HTMLButtonElement;
-            b.style.transform = "translateY(0)";
+            const b = e.currentTarget as HTMLAnchorElement;
+
+            b.style.transform = "translateY(0) scale(1)";
             b.style.boxShadow =
               "0 0 0 1px rgba(255,255,255,0.12), 0 10px 30px rgba(255,140,0,0.28)";
           }}
         >
           Book a Call
-        </button>
+        </a>
       </div>
 
+      {/* Bottom Text */}
       <div
         style={{
           position: "absolute",

@@ -419,5 +419,5 @@ export default function HeroSequence() {
       </div>
     </div>
   );
-        }
-            
+    }
+    

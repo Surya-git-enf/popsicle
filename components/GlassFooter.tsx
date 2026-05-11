@@ -72,7 +72,7 @@ export default function GlassFooter() {
 
     // 2. Loop ONLY the last 1 second infinitely
     if (currentTime >= duration - 0.1) {
-      vid.currentTime = duration - 0.5;
+      vid.currentTime = duration - 0;
       vid.play().catch(() => {});
     }
   };

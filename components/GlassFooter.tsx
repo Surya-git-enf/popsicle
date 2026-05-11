@@ -41,12 +41,14 @@ export default function GlassFooter() {
     if (!hasShown.current && currentTime >= duration - 2) {
       hasShown.current = true;
 
+      // Darken the overlay so panel reads well
       gsap.to(overlayRef.current, {
         opacity: 1,
         duration: 0.8,
         ease: "power2.out",
       });
 
+      // Float the panel up
       gsap.to(panelRef.current, {
         y: 0,
         scale: 1,
@@ -58,6 +60,7 @@ export default function GlassFooter() {
     }
 
     // 2. Loop the last 2 seconds infinitely
+    // When within 0.1 seconds of the end, jump back 2 seconds to keep it playing
     if (currentTime >= duration - 0.1) {
       vid.currentTime = duration - 2;
       vid.play().catch(() => {});
@@ -75,7 +78,7 @@ export default function GlassFooter() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#000", // Fallback color
+        backgroundColor: "#000", // Fallback color behind the video
       }}
     >
       {/* Full-screen background video */}
@@ -84,7 +87,9 @@ export default function GlassFooter() {
         autoPlay
         muted
         playsInline
+        preload="auto"
         onTimeUpdate={handleTimeUpdate}
+        // Fallback safety net in case onTimeUpdate misses the very end frame
         onEnded={() => {
           if (videoRef.current) {
             videoRef.current.currentTime = videoRef.current.duration - 2;
@@ -100,10 +105,11 @@ export default function GlassFooter() {
           zIndex: 0,
         }}
       >
-        <source src="/videos/ice.mp4" type="video/mp4" />
+        {/* Updated to point to your new .h264 file */}
+        <source src="/videos/ice.h264" type="video/mp4" />
       </video>
 
-      {/* Dark overlay */}
+      {/* Dark overlay — fades in before panel appears */}
       <div
         ref={overlayRef}
         style={{
@@ -115,7 +121,7 @@ export default function GlassFooter() {
         }}
       />
 
-      {/* Glassmorphism panel */}
+      {/* Glassmorphism panel — starts hidden, floats up on video near-end */}
       <div
         ref={panelRef}
         style={{
@@ -133,6 +139,7 @@ export default function GlassFooter() {
           textAlign: "center",
         }}
       >
+        {/* Logo */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
           <div
             style={{
@@ -155,6 +162,7 @@ export default function GlassFooter() {
           </div>
         </div>
 
+        {/* Heading */}
         <h2
           style={{
             marginBottom: 16,
@@ -169,6 +177,7 @@ export default function GlassFooter() {
           Playful - design 3D website
         </h2>
 
+        {/* Body */}
         <p
           style={{
             maxWidth: 420,
@@ -185,6 +194,7 @@ export default function GlassFooter() {
           futuristic, and unforgettable.
         </p>
 
+        {/* CTA -> Anchor link for routing */}
         <a
           href="https://forms.gle/TVrR86bnF1fvzEnA7"
           target="_blank"
@@ -224,6 +234,7 @@ export default function GlassFooter() {
         </a>
       </div>
 
+      {/* Subtle video progress hint at bottom */}
       <div
         style={{
           position: "absolute",

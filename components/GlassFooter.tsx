@@ -106,7 +106,7 @@ export default function GlassFooter() {
         }}
       >
         {/* Updated to point to your new .h264 file */}
-        <source src="/videos/ice.mp4" type="video/ice.mp4" />
+        <source src="/videos/ice.mp4" type="video/mp4" />
       </video>
 
       {/* Dark overlay — fades in before panel appears */}

@@ -61,11 +61,11 @@ export default function TiltShowcase() {
       // Swing Physics for both Cards AND the Final Text
       if (target) {
         tl.fromTo(target, 
-          { rotation: 40, scale: 0.7, y: 150 }, 
-          { rotation: 0, scale: 1, y: 0, duration: 1, ease: "power2.out" }
+          { rotation: 40, scale: 1, y: 150 }, 
+          { rotation: 0, scale: 1, y: 0, duration: 2, ease: "power2.out" }
         )
         .to(target, 
-          { rotation: 40, scale: 0.7, y: 150, duration: 1, ease: "power2.in" }
+          { rotation: 40, scale: 1, y: 150, duration: 2, ease: "power2.in" }
         );
       }
 

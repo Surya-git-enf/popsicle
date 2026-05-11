@@ -13,13 +13,24 @@ export default function GlassFooter() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const hasShown = useRef(false);
 
-  // Force play the video on mount to bypass browser autoPlay quirks
+  // Play video ONLY when scrolled into view
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch((err) => {
-        console.warn("Video autoplay blocked by browser:", err);
-      });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          videoRef.current?.play().catch(() => {});
+        } else {
+          videoRef.current?.pause(); // Pauses if they scroll away
+        }
+      },
+      { threshold: 0.3 } // Triggers when 30% of the section is visible on screen
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
     }
+
+    return () => observer.disconnect();
   }, []);
 
   useGSAP(
@@ -37,11 +48,11 @@ export default function GlassFooter() {
 
     const { currentTime, duration } = vid;
 
-    // 1. Reveal panel in the last 2 seconds
-    if (!hasShown.current && currentTime >= duration - 2) {
+    // 1. Reveal panel slightly before the 1-second loop starts for a smooth transition
+    if (!hasShown.current && currentTime >= duration - 1.5) {
       hasShown.current = true;
 
-      // Darken the overlay so panel reads well
+      // Darken the overlay
       gsap.to(overlayRef.current, {
         opacity: 1,
         duration: 0.8,
@@ -59,10 +70,9 @@ export default function GlassFooter() {
       });
     }
 
-    // 2. Loop the last 2 seconds infinitely
-    // When within 0.1 seconds of the end, jump back 2 seconds to keep it playing
+    // 2. Loop ONLY the last 1 second infinitely
     if (currentTime >= duration - 0.1) {
-      vid.currentTime = duration - 2;
+      vid.currentTime = duration - 1;
       vid.play().catch(() => {});
     }
   };
@@ -78,21 +88,20 @@ export default function GlassFooter() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#000", // Fallback color behind the video
+        backgroundColor: "#000",
       }}
     >
-      {/* Full-screen background video */}
+      {/* Full-screen background video — autoPlay REMOVED */}
       <video
         ref={videoRef}
-        autoPlay
         muted
         playsInline
         preload="auto"
         onTimeUpdate={handleTimeUpdate}
-        // Fallback safety net in case onTimeUpdate misses the very end frame
+        // Fallback safety net for the 1-second loop
         onEnded={() => {
           if (videoRef.current) {
-            videoRef.current.currentTime = videoRef.current.duration - 2;
+            videoRef.current.currentTime = videoRef.current.duration - 1;
             videoRef.current.play();
           }
         }}
@@ -105,11 +114,10 @@ export default function GlassFooter() {
           zIndex: 0,
         }}
       >
-        {/* Updated to point to your new .h264 file */}
         <source src="/videos/ice.mp4" type="video/mp4" />
       </video>
 
-      {/* Dark overlay — fades in before panel appears */}
+      {/* Dark overlay */}
       <div
         ref={overlayRef}
         style={{
@@ -121,7 +129,7 @@ export default function GlassFooter() {
         }}
       />
 
-      {/* Glassmorphism panel — starts hidden, floats up on video near-end */}
+      {/* Glassmorphism panel */}
       <div
         ref={panelRef}
         style={{
@@ -139,7 +147,6 @@ export default function GlassFooter() {
           textAlign: "center",
         }}
       >
-        {/* Logo */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
           <div
             style={{
@@ -162,7 +169,6 @@ export default function GlassFooter() {
           </div>
         </div>
 
-        {/* Heading */}
         <h2
           style={{
             marginBottom: 16,
@@ -177,7 +183,6 @@ export default function GlassFooter() {
           Playful - design 3D website
         </h2>
 
-        {/* Body */}
         <p
           style={{
             maxWidth: 420,
@@ -194,7 +199,6 @@ export default function GlassFooter() {
           futuristic, and unforgettable.
         </p>
 
-        {/* CTA -> Anchor link for routing */}
         <a
           href="https://forms.gle/TVrR86bnF1fvzEnA7"
           target="_blank"
@@ -232,25 +236,6 @@ export default function GlassFooter() {
         >
           Book a Call
         </a>
-      </div>
-
-      {/* Subtle video progress hint at bottom */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 24,
-          left: "50%",
-          transform: "translateX(-50%)",
-          fontFamily: "monospace",
-          fontSize: 9,
-          letterSpacing: "0.3em",
-          textTransform: "uppercase",
-          color: "rgba(255,255,255,0.3)",
-          zIndex: 20,
-          pointerEvents: "none",
-        }}
-      >
-        Loading experience…
       </div>
     </section>
   );
